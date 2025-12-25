@@ -2224,7 +2224,7 @@
         <div class="hook-modal">
             <h2>Bingo Practice</h2>
             <p style="text-align: center; color: #7a4f2a; margin-bottom: 15px;">
-                Find all words that use ALL of these letters. Bingos earn a 50-point bonus in Scrabble!
+                Find all words that use ALL of these letters. Bingos earn a 50-point bonus in Scrabble.
             </p>
             
             <div class="hook-word-display">
@@ -2246,7 +2246,7 @@
                 </div>
                 
                 <div class="bingo-hint" style="font-size: 0.85em; color: #7a4f2a; margin-top: 10px;">
-                    Use ALL letters exactly once. Drag letters to rearrange them!
+                    Use ALL letters exactly once. Drag letters to rearrange them.
                 </div>
                 
                 <div class="hook-score">
@@ -2732,9 +2732,9 @@
             
             if (winner === 'player') {
                 winnerMessage.className = 'winner-message you-win';
-                winnerMessage.innerHTML = '🎉 YOU WIN! 🎉<br>Congratulations!';
+                winnerMessage.innerHTML = 'YOU WIN! <br>Congratulations!';
                 endgameContent.className = 'endgame-modal winner';
-                document.getElementById('endgameTitle').textContent = '🏆 Victory! 🏆';
+                document.getElementById('endgameTitle').textContent = 'VICTORY!';
                 // Trigger confetti
                 createConfetti();
             } else if (winner === 'computer') {
