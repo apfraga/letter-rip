@@ -7,7 +7,8 @@ I made this game primarily to help with my own scrabble performance. Though, I'd
 2) **Play Computer:** Play against a computer opponent at your chosen difficulty level. You can tailor difficulty by the computer's ability to pick the highest scoring word and by its defensiveness of high-value tiles. In both free play mode and computer mode you have an "efficiency score" which is a measure of how close your plays are to optimal. It's calculated as:(Your Points Scored ÷ Best Possible Points) × 100%
 3) **Hook Words:** Practice hook words. In other words, practice extending a word already on the board by adding letters before or after the word to make a new word.
 4) **Bingo Practice:** Practice finding 7 and 8-letter words that use all your tiles for the 50-point bingo bonus.
-5) **Vocabulary Mode:** Expand your Scrabble vocabulary by learning new words.
+5) **Anagram Practice:** Practice solving anagrams.
+6) **Vocabulary Mode:** Expand your Scrabble vocabulary by learning new words.
 
 Cheers,
 Alex
