@@ -700,6 +700,38 @@
             color: #155724;
         }
         
+        .anagram-word {
+            display: inline-block;
+            padding: 3px 8px;
+            margin: 2px;
+            background: #d4edda;
+            border: 1px solid #28a745;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 0.85em;
+            font-weight: bold;
+            color: #155724;
+        }
+        
+        .anagram-word.missed {
+            background: #fff3cd;
+            border-color: #ffc107;
+            color: #856404;
+        }
+        
+        .anagram-length-group {
+            margin-bottom: 10px;
+            line-height: 1.8;
+        }
+        
+        .anagram-length-label {
+            display: block;
+            font-weight: bold;
+            color: #5d3a1a;
+            margin-bottom: 4px;
+            font-size: 0.9em;
+        }
+        
         /* Computer Settings Modal */
         .settings-modal-overlay {
             position: fixed;
@@ -1783,6 +1815,114 @@
             display: block;
         }
         
+        /* Rack Balance Display */
+        .rack-balance-container {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            border: 2px solid #8b7355;
+        }
+        
+        .rack-balance-container.visible {
+            display: block;
+        }
+        
+        .rack-balance-header {
+            font-weight: bold;
+            color: #5d3a1a;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+            border-bottom: 1px solid #8b7355;
+            padding-bottom: 8px;
+        }
+        
+        .rack-balance-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 15px;
+            margin-bottom: 12px;
+        }
+        
+        .rack-balance-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.85em;
+            color: #5d3a1a;
+        }
+        
+        .rack-balance-label {
+            font-weight: 500;
+        }
+        
+        .rack-balance-value {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: bold;
+        }
+        
+        .balance-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .balance-dot.green { background: #27ae60; }
+        .balance-dot.yellow { background: #f1c40f; }
+        .balance-dot.red { background: #e74c3c; }
+        
+        .rack-balance-overall {
+            border-top: 1px solid #8b7355;
+            padding-top: 10px;
+            text-align: center;
+        }
+        
+        .overall-score-label {
+            font-size: 0.85em;
+            color: #5d3a1a;
+            margin-bottom: 5px;
+        }
+        
+        .overall-score-bar {
+            height: 12px;
+            background: #ddd;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 5px 0;
+        }
+        
+        .overall-score-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.3s ease;
+        }
+        
+        .overall-score-fill.excellent { background: linear-gradient(90deg, #27ae60, #2ecc71); }
+        .overall-score-fill.good { background: linear-gradient(90deg, #f1c40f, #f39c12); }
+        .overall-score-fill.fair { background: linear-gradient(90deg, #e67e22, #d35400); }
+        .overall-score-fill.poor { background: linear-gradient(90deg, #e74c3c, #c0392b); }
+        
+        .overall-score-text {
+            font-size: 1em;
+            font-weight: bold;
+            color: #5d3a1a;
+        }
+        
+        .overall-score-rating {
+            font-size: 0.85em;
+            margin-left: 8px;
+        }
+        
+        .overall-score-rating.excellent { color: #27ae60; }
+        .overall-score-rating.good { color: #f1c40f; }
+        .overall-score-rating.fair { color: #e67e22; }
+        .overall-score-rating.poor { color: #e74c3c; }
+        
         /* Expert mode layout: info LEFT, board MIDDLE, controls RIGHT */
         .container.expert-layout {
             max-width: 1400px;
@@ -1991,6 +2131,11 @@
                     <p>Practice finding 7 and 8-letter bingos. Use all your tiles for that 50-point bonus.</p>
                 </div>
                 
+                <div class="mode-card" onclick="openAnagramPractice()">
+                    <h2>Anagram Practice</h2>
+                    <p>Find all words that can be made from 7 random tiles. Great for spotting opportunities.</p>
+                </div>
+                
                 <div class="mode-card" onclick="openVocabulary()">
                     <h2>Vocabulary</h2>
                     <p>Learn new Scrabble words. See random words from the dictionary with their definitions.</p>
@@ -2004,7 +2149,7 @@
     <!-- Game Screen -->
     <div class="container" id="gameScreen" style="display: none;">
         <h1>Letter Rip: Scrabble Practice</h1>
-        <p class="subtitle">Play the best word and maximize your score.</p>
+        <p class="subtitle">Play the best word and maximize your score!</p>
         
         <div class="stats">
             <div class="stat">
@@ -2052,6 +2197,36 @@
         
         <div class="submit-container">
             <button class="btn btn-submit btn-submit-large" onclick="submitPlay()">Submit Play</button>
+        </div>
+        
+        <div class="rack-balance-container" id="rackBalanceContainer">
+            <div class="rack-balance-header">RACK BALANCE</div>
+            <div class="rack-balance-grid">
+                <div class="rack-balance-item">
+                    <span class="rack-balance-label">V/C Ratio:</span>
+                    <span class="rack-balance-value" id="vcRatio">-<span class="balance-dot"></span></span>
+                </div>
+                <div class="rack-balance-item">
+                    <span class="rack-balance-label">Duplicates:</span>
+                    <span class="rack-balance-value" id="dupeStatus">-<span class="balance-dot"></span></span>
+                </div>
+                <div class="rack-balance-item">
+                    <span class="rack-balance-label">High-Value:</span>
+                    <span class="rack-balance-value" id="highValueStatus">-<span class="balance-dot"></span></span>
+                </div>
+                <div class="rack-balance-item">
+                    <span class="rack-balance-label">Bingo Potential:</span>
+                    <span class="rack-balance-value" id="bingoPotential">-<span class="balance-dot"></span></span>
+                </div>
+            </div>
+            <div class="rack-balance-overall">
+                <div class="overall-score-label">Overall Balance</div>
+                <div class="overall-score-bar">
+                    <div class="overall-score-fill" id="overallScoreFill" style="width: 0%"></div>
+                </div>
+                <span class="overall-score-text" id="overallScoreText">0/100</span>
+                <span class="overall-score-rating" id="overallScoreRating">-</span>
+            </div>
         </div>
         
         <div class="pass-counter" id="passCounter">
@@ -2199,6 +2374,32 @@
                     <li><strong>Skill Level:</strong> Choose beginner, intermediate, or expert for how strong the computer plays</li>
                     <li><strong>Defensiveness:</strong> Choose how much the computer avoids opening premium squares for you</li>
                     <li><strong>Hide Tiles:</strong> Optionally hide the computer's tiles for a more realistic game</li>
+                    <li><strong>Rack Balance:</strong> Optionally display detailed analysis of your rack's playability</li>
+                </ul>
+            </div>
+            
+            <div class="about-section">
+                <h3>Rack Balance (Play Computer Mode)</h3>
+                <p>When enabled in settings, displays a detailed analysis of your current rack's playability. A balanced rack leads to more scoring opportunities.</p>
+                <ul>
+                    <li><strong>V/C Ratio:</strong> Vowel to consonant count. Ideal is 2-3 vowels with 4-5 consonants.
+                        <div class="efficiency-scale" style="margin-top: 5px;">
+                            <span class="efficiency-item efficiency-excellent">2-3 vowels</span>
+                            <span class="efficiency-item efficiency-good">1 or 4 vowels</span>
+                            <span class="efficiency-item efficiency-low">0 or 5+ vowels</span>
+                        </div>
+                    </li>
+                    <li><strong>Duplicates:</strong> Multiple copies of the same letter make word-building harder, especially duplicate vowels.</li>
+                    <li><strong>High-Value Tiles:</strong> Count of tiles worth 4+ points (F, H, V, W, Y, K, J, X, Q, Z). Too many clunky high-point tiles limit options.</li>
+                    <li><strong>Bingo Potential:</strong> Likelihood of finding a 7-letter bingo. Considers bingo-friendly letters (S, A, T, I, N, E, R, L, O, D, G, C), blanks, and penalties for duplicates, too many/few vowels, and hard-to-use tiles.</li>
+                    <li><strong>Overall Score:</strong> Composite 0-100 score combining all factors.
+                        <div class="efficiency-scale" style="margin-top: 5px;">
+                            <span class="efficiency-item efficiency-excellent">80+ Excellent</span>
+                            <span class="efficiency-item efficiency-good">60-79 Good</span>
+                            <span class="efficiency-item efficiency-okay">40-59 Fair</span>
+                            <span class="efficiency-item efficiency-low">&lt;40 Poor</span>
+                        </div>
+                    </li>
                 </ul>
             </div>
             
@@ -2214,16 +2415,6 @@
                     <span class="efficiency-item efficiency-low">&lt;60% Needs Work</span>
                 </div>
                 <p style="margin-top: 15px;">You'll also get a warning if your play opens up a Triple Word square for your opponent.</p>
-            </div>
-            
-            <div class="about-section">
-                <h3>Vocabulary Mode</h3>
-                <p>Expand your Scrabble vocabulary by learning new words.</p>
-                <ul>
-                    <li><strong>Random Words:</strong> See words from the official Scrabble dictionary</li>
-                    <li><strong>Filter by Length:</strong> Focus on 2-letter words, 7-letter bingos, or any length</li>
-                    <li><strong>Definitions:</strong> Learn what each word means (when available)</li>
-                </ul>
             </div>
             
             <div class="about-section">
@@ -2244,6 +2435,27 @@
                     <li><strong>Letter Combos:</strong> Given a set of letters, find all valid bingos</li>
                     <li><strong>Track Progress:</strong> See how many bingos you've found vs. total possible</li>
                     <li><strong>Essential Skill:</strong> Finding bingos consistently separates good players from great ones</li>
+                </ul>
+            </div>
+            
+            <div class="about-section">
+                <h3>Anagram Practice</h3>
+                <p>Practice finding all possible words from a random set of 7 letters—essential for spotting scoring opportunities.</p>
+                <ul>
+                    <li><strong>Random Tiles:</strong> Get 7 letters drawn from actual Scrabble tile distribution (including possible blanks)</li>
+                    <li><strong>Find All Words:</strong> Type any valid word (2-7 letters) that can be made from your tiles</li>
+                    <li><strong>Track Progress:</strong> See how many words you've found vs. total possible</li>
+                    <li><strong>Blanks:</strong> If you have a blank, it can represent any letter</li>
+                </ul>
+            </div>
+            
+            <div class="about-section">
+                <h3>Vocabulary Mode</h3>
+                <p>Expand your Scrabble vocabulary by learning new words.</p>
+                <ul>
+                    <li><strong>Random Words:</strong> See words from the official Scrabble dictionary</li>
+                    <li><strong>Filter by Length:</strong> Focus on 2-letter words, 7-letter bingos, or any length</li>
+                    <li><strong>Definitions:</strong> Learn what each word means (when available)</li>
                 </ul>
             </div>
             
@@ -2301,6 +2513,56 @@
         </div>
     </div>
 
+    <!-- Anagram Practice Modal -->
+    <div class="hook-modal-overlay" id="anagramModal" style="display: none;">
+        <div class="hook-modal">
+            <h2>Anagram Practice</h2>
+            <p style="text-align: center; color: #7a4f2a; margin-bottom: 15px;">
+                Find ALL words (2-7 letters) that can be made from these tiles.
+            </p>
+            
+            <div class="hook-word-display">
+                <div class="bingo-letters" id="anagramLetters">
+                    <span class="bingo-letter">A</span>
+                    <span class="bingo-letter">B</span>
+                    <span class="bingo-letter">C</span>
+                    <span class="bingo-letter">D</span>
+                    <span class="bingo-letter">E</span>
+                    <span class="bingo-letter">F</span>
+                    <span class="bingo-letter">G</span>
+                </div>
+                
+                <button class="vocab-btn shuffle-bingo-btn" onclick="shuffleAnagramLetters()">Shuffle</button>
+                
+                <div class="hook-input-area">
+                    <input type="text" class="hook-text-input" id="anagramGuessInput" placeholder="Type any word..." onkeypress="handleAnagramGuess(event)" oninput="updateAnagramLetterHighlights()">
+                    <button class="vocab-btn" onclick="submitAnagramGuess()" style="padding: 10px 20px;">Check</button>
+                </div>
+                
+                <div class="bingo-hint" style="font-size: 0.85em; color: #7a4f2a; margin-top: 10px;">
+                    Find words of any length (2-7 letters). Blanks can be any letter.
+                </div>
+                
+                <div class="hook-score">
+                    Found: <span id="anagramsFound">0</span> / <span id="anagramsTotal">0</span> words
+                </div>
+            </div>
+            
+            <div class="hook-results" id="anagramResults">
+                <h4>Your discoveries:</h4>
+                <div class="hook-list" id="anagramList">
+                    <span style="color: #7a4f2a; font-style: italic;">Type a word above to find anagrams...</span>
+                </div>
+            </div>
+            
+            <div class="hook-btn-row">
+                <button class="vocab-btn" onclick="showNewAnagram()">New Letters</button>
+                <button class="hook-reveal-btn" onclick="revealAllAnagrams()">Reveal All</button>
+                <button class="vocab-btn secondary" onclick="closeAnagramPractice()">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Computer Settings Modal -->
     <div class="settings-modal-overlay" id="computerSettingsModal" style="display: none;">
         <div class="settings-modal">
@@ -2353,6 +2615,19 @@
                     </button>
                     <button class="settings-option" data-visibility="hide" onclick="selectTileVisibility('hide')">
                         <strong>Hide Tiles</strong>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <label class="settings-label">Rack Balance Display</label>
+                <p class="settings-description">Show detailed analysis of your rack's playability?</p>
+                <div class="settings-options horizontal">
+                    <button class="settings-option" data-rackbalance="show" onclick="selectRackBalance('show')">
+                        <strong>Show</strong>
+                    </button>
+                    <button class="settings-option selected" data-rackbalance="hide" onclick="selectRackBalance('hide')">
+                        <strong>Hide</strong>
                     </button>
                 </div>
             </div>
@@ -2486,6 +2761,7 @@
         let computerSkillLevel = 'expert'; // 'beginner', 'intermediate', 'expert'
         let computerDefensiveness = 'medium'; // 'low', 'medium', 'high'
         let hideComputerTiles = false; // Option to hide computer's tiles from view
+        let showRackBalance = false; // Option to show rack balance analysis
         
         // Show blank tile letter selection modal
         function showBlankModal(row, col, rackIndex) {
@@ -3498,6 +3774,335 @@
             updateBingoScore();
         }
         
+        // Anagram Practice variables
+        let currentAnagramLetters = [];
+        let allAnagrams = []; // All valid words that can be formed
+        let foundAnagrams = new Set();
+        
+        function openAnagramPractice() {
+            // Make sure dictionary is loaded
+            if (!dictionaryLoaded) {
+                loadDictionary().then(() => {
+                    document.getElementById('anagramModal').style.display = 'flex';
+                    showNewAnagram();
+                });
+            } else {
+                document.getElementById('anagramModal').style.display = 'flex';
+                showNewAnagram();
+            }
+        }
+        
+        function closeAnagramPractice() {
+            document.getElementById('anagramModal').style.display = 'none';
+        }
+        
+        function canFormWordFromLetters(word, availableLetters, blankCount) {
+            const letterPool = [...availableLetters];
+            let blanksNeeded = 0;
+            
+            for (const char of word) {
+                const idx = letterPool.indexOf(char);
+                if (idx !== -1) {
+                    letterPool.splice(idx, 1);
+                } else {
+                    blanksNeeded++;
+                }
+            }
+            
+            return blanksNeeded <= blankCount;
+        }
+        
+        function findAllAnagrams(letters) {
+            const hasBlank = letters.includes('?');
+            const nonBlankLetters = letters.filter(l => l !== '?');
+            const blankCount = letters.length - nonBlankLetters.length;
+            
+            const anagrams = [];
+            
+            for (const word of DICTIONARY) {
+                // Only consider words that can be formed with our letters (2-7 letters)
+                if (word.length < 2 || word.length > letters.length) continue;
+                
+                if (canFormWordFromLetters(word, nonBlankLetters, blankCount)) {
+                    anagrams.push(word);
+                }
+            }
+            
+            // Sort by length descending, then alphabetically
+            anagrams.sort((a, b) => {
+                if (b.length !== a.length) return b.length - a.length;
+                return a.localeCompare(b);
+            });
+            
+            return anagrams;
+        }
+        
+        function showNewAnagram() {
+            // Generate 7 random letters from tile bag distribution
+            const tempBag = [...FULL_BAG];
+            currentAnagramLetters = [];
+            
+            for (let i = 0; i < 7; i++) {
+                const idx = Math.floor(Math.random() * tempBag.length);
+                let letter = tempBag.splice(idx, 1)[0];
+                // Convert blank (_) to ? for display
+                if (letter === '_') letter = '?';
+                currentAnagramLetters.push(letter);
+            }
+            
+            // Find all valid anagrams
+            allAnagrams = findAllAnagrams(currentAnagramLetters);
+            foundAnagrams = new Set();
+            
+            // Update display
+            renderAnagramLetters();
+            updateAnagramDisplay();
+            updateAnagramScore();
+            
+            // Clear and focus input
+            const input = document.getElementById('anagramGuessInput');
+            input.value = '';
+            input.className = 'hook-text-input';
+            input.focus();
+        }
+        
+        function renderAnagramLetters() {
+            const container = document.getElementById('anagramLetters');
+            container.innerHTML = currentAnagramLetters.map((letter, idx) => 
+                `<span class="bingo-letter${letter === '?' ? ' blank-tile' : ''}" draggable="true" data-index="${idx}">${letter === '?' ? '?' : letter}</span>`
+            ).join('');
+            
+            setupAnagramDragListeners();
+            updateAnagramLetterHighlights();
+        }
+        
+        function setupAnagramDragListeners() {
+            const letters = document.querySelectorAll('#anagramLetters .bingo-letter');
+            let draggedIndex = null;
+            
+            letters.forEach(letter => {
+                letter.addEventListener('dragstart', (e) => {
+                    draggedIndex = parseInt(e.target.dataset.index);
+                    e.target.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+                
+                letter.addEventListener('dragend', (e) => {
+                    e.target.classList.remove('dragging');
+                    document.querySelectorAll('#anagramLetters .bingo-letter').forEach(l => l.classList.remove('drag-over'));
+                });
+                
+                letter.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    if (!e.target.classList.contains('dragging')) {
+                        e.target.classList.add('drag-over');
+                    }
+                });
+                
+                letter.addEventListener('dragleave', (e) => {
+                    e.target.classList.remove('drag-over');
+                });
+                
+                letter.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const dropIndex = parseInt(e.target.dataset.index);
+                    
+                    if (draggedIndex !== null && draggedIndex !== dropIndex) {
+                        // Swap letters
+                        const temp = currentAnagramLetters[draggedIndex];
+                        currentAnagramLetters[draggedIndex] = currentAnagramLetters[dropIndex];
+                        currentAnagramLetters[dropIndex] = temp;
+                        
+                        renderAnagramLetters();
+                    }
+                    
+                    draggedIndex = null;
+                });
+            });
+        }
+        
+        function shuffleAnagramLetters() {
+            // Fisher-Yates shuffle
+            for (let i = currentAnagramLetters.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [currentAnagramLetters[i], currentAnagramLetters[j]] = [currentAnagramLetters[j], currentAnagramLetters[i]];
+            }
+            renderAnagramLetters();
+            document.getElementById('anagramGuessInput').focus();
+        }
+        
+        function updateAnagramLetterHighlights() {
+            const input = document.getElementById('anagramGuessInput');
+            const typed = input.value.toUpperCase().split('');
+            const letterElements = document.querySelectorAll('#anagramLetters .bingo-letter');
+            
+            // Track which letters have been used
+            const availableLetters = [...currentAnagramLetters];
+            const usedIndices = new Set();
+            
+            typed.forEach(char => {
+                // First try to match a regular letter
+                let idx = -1;
+                for (let i = 0; i < availableLetters.length; i++) {
+                    if (availableLetters[i] === char && !usedIndices.has(i)) {
+                        idx = i;
+                        break;
+                    }
+                }
+                
+                // If no regular match, try to use a blank
+                if (idx === -1) {
+                    for (let i = 0; i < availableLetters.length; i++) {
+                        if (availableLetters[i] === '?' && !usedIndices.has(i)) {
+                            idx = i;
+                            break;
+                        }
+                    }
+                }
+                
+                if (idx !== -1) {
+                    usedIndices.add(idx);
+                }
+            });
+            
+            // Update visual state
+            letterElements.forEach((el, i) => {
+                const isBlank = currentAnagramLetters[i] === '?';
+                if (usedIndices.has(i)) {
+                    el.classList.add('used');
+                } else {
+                    el.classList.remove('used');
+                }
+                if (isBlank) {
+                    el.classList.add('blank-tile');
+                }
+            });
+        }
+        
+        function handleAnagramGuess(event) {
+            if (event.key === 'Enter') {
+                submitAnagramGuess();
+            }
+        }
+        
+        function submitAnagramGuess() {
+            const input = document.getElementById('anagramGuessInput');
+            const guess = input.value.toUpperCase().trim();
+            
+            if (guess.length < 2) return;
+            
+            // Check if it's a valid anagram
+            if (allAnagrams.includes(guess)) {
+                if (foundAnagrams.has(guess)) {
+                    // Already found
+                    input.className = 'hook-text-input duplicate';
+                } else {
+                    // Correct!
+                    foundAnagrams.add(guess);
+                    input.className = 'hook-text-input correct';
+                    updateAnagramDisplay();
+                    updateAnagramScore();
+                }
+            } else {
+                // Check if it's a valid word that can be formed (in case we missed it)
+                const nonBlankLetters = currentAnagramLetters.filter(l => l !== '?');
+                const blankCount = currentAnagramLetters.length - nonBlankLetters.length;
+                
+                if (guess.length <= currentAnagramLetters.length && 
+                    canFormWordFromLetters(guess, nonBlankLetters, blankCount) && 
+                    DICTIONARY.has(guess)) {
+                    // Valid word we can form - add it!
+                    allAnagrams.push(guess);
+                    allAnagrams.sort((a, b) => {
+                        if (b.length !== a.length) return b.length - a.length;
+                        return a.localeCompare(b);
+                    });
+                    foundAnagrams.add(guess);
+                    input.className = 'hook-text-input correct';
+                    updateAnagramDisplay();
+                    updateAnagramScore();
+                } else {
+                    // Incorrect
+                    input.className = 'hook-text-input incorrect';
+                }
+            }
+            
+            // Reset after delay
+            setTimeout(() => {
+                input.value = '';
+                input.className = 'hook-text-input';
+                updateAnagramLetterHighlights();
+                input.focus();
+            }, 600);
+        }
+        
+        function updateAnagramDisplay() {
+            const anagramList = document.getElementById('anagramList');
+            
+            if (foundAnagrams.size === 0) {
+                anagramList.innerHTML = '<span style="color: #7a4f2a; font-style: italic;">Type a word above to find anagrams...</span>';
+                return;
+            }
+            
+            // Group by length
+            const byLength = {};
+            foundAnagrams.forEach(word => {
+                const len = word.length;
+                if (!byLength[len]) byLength[len] = [];
+                byLength[len].push(word);
+            });
+            
+            let html = '';
+            // Sort lengths descending
+            Object.keys(byLength).sort((a, b) => b - a).forEach(len => {
+                byLength[len].sort().forEach(word => {
+                    html += `<span class="anagram-word">${word}</span>`;
+                });
+            });
+            
+            anagramList.innerHTML = html;
+        }
+        
+        function updateAnagramScore() {
+            document.getElementById('anagramsFound').textContent = foundAnagrams.size;
+            document.getElementById('anagramsTotal').textContent = allAnagrams.length;
+        }
+        
+        function revealAllAnagrams() {
+            const anagramList = document.getElementById('anagramList');
+            
+            if (allAnagrams.length === 0) {
+                anagramList.innerHTML = '<span style="color: #7a4f2a; font-style: italic;">No words possible with these letters.</span>';
+                return;
+            }
+            
+            // Group by length for display
+            const byLength = {};
+            allAnagrams.forEach(word => {
+                const len = word.length;
+                if (!byLength[len]) byLength[len] = [];
+                byLength[len].push(word);
+            });
+            
+            let html = '';
+            // Sort lengths descending
+            Object.keys(byLength).sort((a, b) => b - a).forEach(len => {
+                html += `<div class="anagram-length-group"><span class="anagram-length-label">${len}-letter words (${byLength[len].length}):</span>`;
+                byLength[len].sort().forEach(word => {
+                    const found = foundAnagrams.has(word);
+                    html += `<span class="anagram-word${found ? '' : ' missed'}">${word}</span>`;
+                });
+                html += '</div>';
+            });
+            
+            anagramList.innerHTML = html;
+            
+            // Mark all as found for the score
+            allAnagrams.forEach(word => foundAnagrams.add(word));
+            updateAnagramScore();
+        }
+        
         function findAllExtensions(word) {
             const extensions = [];
             
@@ -3793,6 +4398,212 @@
                 btn.classList.remove('selected');
             });
             document.querySelector(`.settings-option[data-visibility="${visibility}"]`).classList.add('selected');
+        }
+        
+        function selectRackBalance(setting) {
+            showRackBalance = (setting === 'show');
+            // Update UI
+            document.querySelectorAll('.settings-option[data-rackbalance]').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.querySelector(`.settings-option[data-rackbalance="${setting}"]`).classList.add('selected');
+        }
+        
+        // Rack Balance Analysis Functions
+        function analyzeRackBalance(rackTiles) {
+            const vowels = ['A', 'E', 'I', 'O', 'U'];
+            const highValueLetters = ['F', 'H', 'V', 'W', 'Y', 'K', 'J', 'X', 'Q', 'Z']; // 4+ points
+            const bingoFriendly = ['S', 'A', 'T', 'I', 'N', 'E', 'R', 'L', 'O', 'D', 'G', 'C']; // Common bingo letters
+            
+            // Filter out blanks for some calculations
+            const nonBlankTiles = rackTiles.filter(t => t !== '_');
+            const blankCount = rackTiles.filter(t => t === '_').length;
+            
+            // 1. Vowel-Consonant Ratio
+            const vowelCount = nonBlankTiles.filter(t => vowels.includes(t)).length;
+            const consonantCount = nonBlankTiles.filter(t => !vowels.includes(t)).length;
+            
+            let vcStatus = 'green';
+            if (vowelCount === 0 || vowelCount >= 5 || consonantCount === 0) {
+                vcStatus = 'red';
+            } else if (vowelCount === 1 || vowelCount === 4) {
+                vcStatus = 'yellow';
+            }
+            
+            // 2. Duplicates
+            const letterCounts = {};
+            nonBlankTiles.forEach(t => {
+                letterCounts[t] = (letterCounts[t] || 0) + 1;
+            });
+            const maxDupe = Math.max(...Object.values(letterCounts), 0);
+            const dupeLetters = Object.entries(letterCounts).filter(([l, c]) => c >= 2).map(([l, c]) => `${l}×${c}`);
+            
+            let dupeStatus = 'green';
+            let dupeText = 'None';
+            if (maxDupe >= 3) {
+                dupeStatus = 'red';
+                dupeText = dupeLetters.join(', ');
+            } else if (maxDupe === 2) {
+                dupeStatus = 'yellow';
+                dupeText = dupeLetters.join(', ');
+            }
+            
+            // 3. High-Value Tile Load
+            const highValueCount = nonBlankTiles.filter(t => highValueLetters.includes(t)).length;
+            
+            let highValueStatus = 'green';
+            if (highValueCount >= 3) {
+                highValueStatus = 'red';
+            } else if (highValueCount === 2) {
+                highValueStatus = 'yellow';
+            }
+            
+            // 4. Bingo Potential (more sophisticated calculation)
+            const hasBlank = blankCount > 0;
+            const hasS = nonBlankTiles.includes('S');
+            
+            // Start with base score from bingo-friendly letters
+            let bingoScore = 0;
+            const bingoFriendlyCount = nonBlankTiles.filter(t => bingoFriendly.includes(t)).length;
+            bingoScore += bingoFriendlyCount * 10; // Up to 70 points for 7 good letters
+            
+            // Big bonus for blank
+            if (hasBlank) bingoScore += 30;
+            
+            // Bonus for S (versatile for bingos)
+            if (hasS) bingoScore += 10;
+            
+            // PENALTIES
+            // Too many vowels (4+ is problematic for bingos)
+            if (vowelCount >= 5) bingoScore -= 40;
+            else if (vowelCount >= 4) bingoScore -= 25;
+            
+            // Too few vowels
+            if (vowelCount === 0) bingoScore -= 40;
+            else if (vowelCount === 1) bingoScore -= 15;
+            
+            // Duplicate vowels are especially bad for bingos
+            const vowelDupes = ['A', 'E', 'I', 'O', 'U'].filter(v => (letterCounts[v] || 0) >= 2);
+            bingoScore -= vowelDupes.length * 15;
+            
+            // Any duplicates hurt bingo chances
+            const totalDupes = Object.values(letterCounts).filter(c => c >= 2).length;
+            bingoScore -= totalDupes * 10;
+            
+            // Hard-to-use high point tiles kill bingo chances
+            const bingoKillers = ['Q', 'Z', 'X', 'J', 'K'].filter(t => nonBlankTiles.includes(t));
+            bingoScore -= bingoKillers.length * 20;
+            
+            // Awkward letters (not in bingoFriendly and not high-value)
+            const awkwardLetters = ['V', 'W', 'F', 'H', 'Y', 'P', 'B', 'M'];
+            const awkwardCount = nonBlankTiles.filter(t => awkwardLetters.includes(t)).length;
+            if (awkwardCount >= 3) bingoScore -= 20;
+            else if (awkwardCount >= 2) bingoScore -= 10;
+            
+            // Normalize to determine rating
+            let bingoPotential = 'Low';
+            let bingoStatus = 'red';
+            if (bingoScore >= 50) {
+                bingoPotential = 'High';
+                bingoStatus = 'green';
+            } else if (bingoScore >= 25) {
+                bingoPotential = 'Med';
+                bingoStatus = 'yellow';
+            }
+            
+            // 5. Overall Score (0-100)
+            let overallScore = 0;
+            
+            // Vowel/consonant balance (up to 30 pts)
+            if (vcStatus === 'green') overallScore += 30;
+            else if (vcStatus === 'yellow') overallScore += 15;
+            else overallScore += 0;
+            
+            // No problematic duplicates (up to 20 pts)
+            if (dupeStatus === 'green') overallScore += 20;
+            else if (dupeStatus === 'yellow') overallScore += 10;
+            else overallScore += 0;
+            
+            // Low high-point tile load (up to 20 pts)
+            if (highValueStatus === 'green') overallScore += 20;
+            else if (highValueStatus === 'yellow') overallScore += 10;
+            else overallScore += 0;
+            
+            // Bingo potential (up to 30 pts)
+            if (bingoStatus === 'green') overallScore += 30;
+            else if (bingoStatus === 'yellow') overallScore += 15;
+            else overallScore += 5;
+            
+            // Determine rating
+            let overallRating = 'Poor';
+            let overallClass = 'poor';
+            if (overallScore >= 80) {
+                overallRating = 'Excellent';
+                overallClass = 'excellent';
+            } else if (overallScore >= 60) {
+                overallRating = 'Good';
+                overallClass = 'good';
+            } else if (overallScore >= 40) {
+                overallRating = 'Fair';
+                overallClass = 'fair';
+            }
+            
+            return {
+                vowelCount,
+                consonantCount,
+                vcStatus,
+                dupeText,
+                dupeStatus,
+                highValueCount,
+                highValueStatus,
+                bingoPotential,
+                bingoStatus,
+                overallScore,
+                overallRating,
+                overallClass
+            };
+        }
+        
+        function updateRackBalanceDisplay() {
+            const container = document.getElementById('rackBalanceContainer');
+            if (!container) return;
+            
+            // Only show in expert mode and if enabled
+            if (gameMode !== 'expert' || !showRackBalance) {
+                container.classList.remove('visible');
+                return;
+            }
+            
+            container.classList.add('visible');
+            
+            const analysis = analyzeRackBalance(rack);
+            
+            // Update V/C Ratio
+            const vcEl = document.getElementById('vcRatio');
+            vcEl.innerHTML = `${analysis.vowelCount}/${analysis.consonantCount} <span class="balance-dot ${analysis.vcStatus}"></span>`;
+            
+            // Update Duplicates
+            const dupeEl = document.getElementById('dupeStatus');
+            dupeEl.innerHTML = `${analysis.dupeText} <span class="balance-dot ${analysis.dupeStatus}"></span>`;
+            
+            // Update High-Value
+            const hvEl = document.getElementById('highValueStatus');
+            hvEl.innerHTML = `${analysis.highValueCount} <span class="balance-dot ${analysis.highValueStatus}"></span>`;
+            
+            // Update Bingo Potential
+            const bingoEl = document.getElementById('bingoPotential');
+            bingoEl.innerHTML = `${analysis.bingoPotential} <span class="balance-dot ${analysis.bingoStatus}"></span>`;
+            
+            // Update Overall Score
+            const fillEl = document.getElementById('overallScoreFill');
+            fillEl.style.width = `${analysis.overallScore}%`;
+            fillEl.className = `overall-score-fill ${analysis.overallClass}`;
+            
+            document.getElementById('overallScoreText').textContent = `${analysis.overallScore}/100`;
+            
+            const ratingEl = document.getElementById('overallScoreRating');
+            ratingEl.textContent = analysis.overallRating;
+            ratingEl.className = `overall-score-rating ${analysis.overallClass}`;
         }
         
         function startGameWithSettings() {
@@ -4320,6 +5131,9 @@
                     }
                 }
             };
+            
+            // Update rack balance display
+            updateRackBalanceDisplay();
         }
         
         function renderComputerRack() {
@@ -5625,6 +6439,11 @@
                         <p>Practice finding 7 and 8-letter bingos! Use all your tiles for that 50-point bonus.</p>
                     </div>
                     
+                    <div class="mode-card" onclick="openAnagramPractice()">
+                        <h2>Anagram Practice</h2>
+                        <p>Find all words that can be made from 7 random tiles. Great for spotting opportunities.</p>
+                    </div>
+                    
                     <div class="mode-card" onclick="openVocabulary()">
                         <h2>Vocabulary</h2>
                         <p>Learn new Scrabble words! See random words from the dictionary with their definitions.</p>
@@ -5674,6 +6493,20 @@
             
             // Reset pass counter
             updatePassCounter();
+            
+            // Hide rack balance display
+            const rackBalanceContainer = document.getElementById('rackBalanceContainer');
+            if (rackBalanceContainer) {
+                rackBalanceContainer.classList.remove('visible');
+            }
+            
+            // Reset rack balance setting for next game
+            showRackBalance = false;
+            document.querySelectorAll('.settings-option[data-rackbalance]').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            const hideBtn = document.querySelector('.settings-option[data-rackbalance="hide"]');
+            if (hideBtn) hideBtn.classList.add('selected');
         }
         
         function confirmBackToMenu() {
