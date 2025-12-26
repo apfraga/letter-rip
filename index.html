@@ -2180,7 +2180,7 @@
             <div class="mode-options">
                 <div class="mode-card" onclick="startGame('free')">
                     <h2>Free Play</h2>
-                    <p>Practice at your own pace. Play words and see how you compare to the best possible plays.</p>
+                    <p>Practice solo at your own pace. No opponent. Just play words and see how you compare to the best possible plays.</p>
                 </div>
                 
                 <div class="mode-card" onclick="startGame('expert')">
@@ -2195,7 +2195,7 @@
                 
                 <div class="mode-card" onclick="openBingoPractice()">
                     <h2>Bingo Practice</h2>
-                    <p>Practice finding 7-letter bingos. Use all your tiles for the 50-point bonus.</p>
+                    <p>Practice finding 7-letter bingos. Use all your tiles for that 50-point bonus.</p>
                 </div>
                 
                 <div class="mode-card" onclick="openAnagramPractice()">
@@ -2205,7 +2205,7 @@
                 
                 <div class="mode-card" onclick="openVocabulary()">
                     <h2>Vocabulary</h2>
-                    <p>Learn new words. See random words from the Scrabble dictionary with their definitions.</p>
+                    <p>Learn new Scrabble words. See random words from the dictionary with their definitions.</p>
                 </div>
             </div>
             
@@ -2643,11 +2643,11 @@
                         <strong>Beginner</strong>
                         <span>Plays weaker moves (bottom 30% of options)</span>
                     </button>
-                    <button class="settings-option" data-skill="intermediate" onclick="selectSkillLevel('intermediate')">
+                    <button class="settings-option selected" data-skill="intermediate" onclick="selectSkillLevel('intermediate')">
                         <strong>Intermediate</strong>
                         <span>Plays good moves with some variance (top 65% of options)</span>
                     </button>
-                    <button class="settings-option selected" data-skill="expert" onclick="selectSkillLevel('expert')">
+                    <button class="settings-option" data-skill="expert" onclick="selectSkillLevel('expert')">
                         <strong>Expert</strong>
                         <span>Always plays the highest-scoring move</span>
                     </button>
@@ -2690,10 +2690,10 @@
                 <label class="settings-label">Rack Balance Display</label>
                 <p class="settings-description">Show detailed analysis of your rack's playability?</p>
                 <div class="settings-options horizontal">
-                    <button class="settings-option" data-rackbalance="show" onclick="selectRackBalance('show')">
+                    <button class="settings-option selected" data-rackbalance="show" onclick="selectRackBalance('show')">
                         <strong>Show</strong>
                     </button>
-                    <button class="settings-option selected" data-rackbalance="hide" onclick="selectRackBalance('hide')">
+                    <button class="settings-option" data-rackbalance="hide" onclick="selectRackBalance('hide')">
                         <strong>Hide</strong>
                     </button>
                 </div>
@@ -2825,10 +2825,10 @@
         let totalPointsScored = 0; // Track total points player scored
         let totalOptimalPoints = 0; // Track total optimal points available
         let turnsPlayed = 0; // Track number of turns for efficiency calc
-        let computerSkillLevel = 'expert'; // 'beginner', 'intermediate', 'expert'
+        let computerSkillLevel = 'intermediate'; // 'beginner', 'intermediate', 'expert'
         let computerDefensiveness = 'medium'; // 'low', 'medium', 'high'
         let hideComputerTiles = false; // Option to hide computer's tiles from view
-        let showRackBalance = false; // Option to show rack balance analysis
+        let showRackBalance = true; // Option to show rack balance analysis
         
         // Show blank tile letter selection modal
         function showBlankModal(row, col, rackIndex) {
@@ -6503,7 +6503,7 @@
                     
                     <div class="mode-card" onclick="openBingoPractice()">
                         <h2>Bingo Practice</h2>
-                        <p>Practice finding 7 letter bingos. Use all your tiles for the 50-point bonus.</p>
+                        <p>Practice finding 7 and 8-letter bingos! Use all your tiles for that 50-point bonus.</p>
                     </div>
                     
                     <div class="mode-card" onclick="openAnagramPractice()">
