@@ -2178,14 +2178,14 @@
             </div>
             
             <div class="mode-options">
-                <div class="mode-card" onclick="startGame('free')">
-                    <h2>Free Play</h2>
-                    <p>Practice solo at your own pace. No opponent. Just play words and see how you compare to the best possible plays.</p>
-                </div>
-                
                 <div class="mode-card" onclick="startGame('expert')">
                     <h2>Play Computer</h2>
                     <p>Play against a computer opponent. Choose from beginner, intermediate, or expert difficulty.</p>
+                </div>
+                
+                <div class="mode-card" onclick="startGame('free')">
+                    <h2>Free Play</h2>
+                    <p>Practice solo at your own pace. No opponent. Just play words and see how you compare to the best possible plays.</p>
                 </div>
                 
                 <div class="mode-card" onclick="openHookWords()">
@@ -2424,16 +2424,6 @@
             </div>
             
             <div class="about-section">
-                <h3>Free Play Mode</h3>
-                <p>Practice Scrabble at your own pace. Place words on the board and get instant feedback on your play quality. You have no opponent in this gameplay.</p>
-                <ul>
-                    <li><strong>Play Preview:</strong> See your word and score before submitting</li>
-                    <li><strong>Better Plays:</strong> After each play, see higher-scoring alternatives you could have made</li>
-                    <li><strong>Click to Highlight:</strong> Click any suggested play to see where it would go on the board</li>
-                </ul>
-            </div>
-            
-            <div class="about-section">
                 <h3>Play Computer Mode</h3>
                 <p>Play against a computer opponent at your chosen difficulty level. You can tailor difficulty by the computer's ability to pick the highest scoring word and by their defensiveness of high value tiles.</p>
                 <ul>
@@ -2445,6 +2435,16 @@
                 </ul>
             </div>
             
+            <div class="about-section">
+                            <h3>Free Play Mode</h3>
+                <p>Practice Scrabble at your own pace. Place words on the board and get instant feedback on your play quality. You have no opponent in this gameplay.</p>
+                <ul>
+                    <li><strong>Play Preview:</strong> See your word and score before submitting</li>
+                    <li><strong>Better Plays:</strong> After each play, see higher-scoring alternatives you could have made</li>
+                    <li><strong>Click to Highlight:</strong> Click any suggested play to see where it would go on the board</li>
+                </ul>
+            </div>
+
             <div class="about-section">
                 <h3>Rack Balance (Play Computer Mode)</h3>
                 <p>When enabled in settings, displays a detailed analysis of your current rack's playability. A balanced rack leads to more scoring opportunities.</p>
@@ -3418,11 +3418,323 @@
                     
                     definitionEl.innerHTML = definitionHtml || '<div class="vocab-no-definition">No definition available.</div>';
                 } else {
-                    definitionEl.innerHTML = '<div class="vocab-no-definition">No definition found. This may be a specialized Scrabble word!</div>';
+                    // Try to get definition from Scrabble dictionary definitions if available
+                    const scrabbleDefinition = getScrabbleDefinition(word);
+                    if (scrabbleDefinition) {
+                        definitionEl.innerHTML = `
+                            <div class="scrabble-only-note" style="color: #e67e22; font-size: 0.85em; margin-bottom: 10px; font-style: italic;">
+                                📚 Scrabble Dictionary Only
+                            </div>
+                            <div class="definition-text">${scrabbleDefinition}</div>
+                        `;
+                    } else {
+                        definitionEl.innerHTML = '<div class="vocab-no-definition">This is a valid Scrabble word, but no definition is available. It may be a specialized word found only in the Scrabble dictionary!</div>';
+                    }
                 }
             } catch (error) {
-                definitionEl.innerHTML = '<div class="vocab-no-definition">Could not load definition. Check your internet connection.</div>';
+                // Try Scrabble dictionary as fallback on network error too
+                const scrabbleDefinition = getScrabbleDefinition(word);
+                if (scrabbleDefinition) {
+                    definitionEl.innerHTML = `
+                        <div class="scrabble-only-note" style="color: #e67e22; font-size: 0.85em; margin-bottom: 10px; font-style: italic;">
+                            📚 Scrabble Dictionary Only
+                        </div>
+                        <div class="definition-text">${scrabbleDefinition}</div>
+                    `;
+                } else {
+                    definitionEl.innerHTML = '<div class="vocab-no-definition">Could not load definition. This is a valid Scrabble word!</div>';
+                }
             }
+        }
+        
+        // Scrabble dictionary definitions for common Scrabble-only words
+        function getScrabbleDefinition(word) {
+            const scrabbleDefinitions = {
+                // Two-letter words
+                'AA': 'A type of rough lava',
+                'AB': 'An abdominal muscle',
+                'AD': 'An advertisement',
+                'AE': 'Scottish word for "one"',
+                'AG': 'Silver (chemical symbol)',
+                'AH': 'An exclamation of surprise',
+                'AI': 'A three-toed sloth',
+                'AL': 'An East Indian tree',
+                'AM': 'First person singular of "be"',
+                'AN': 'The indefinite article',
+                'AR': 'The letter R',
+                'AS': 'To the same degree',
+                'AT': 'In the position of',
+                'AW': 'An exclamation of protest',
+                'AX': 'A chopping tool',
+                'AY': 'An affirmative vote; also spelled "aye"',
+                'BA': 'The soul in Egyptian mythology',
+                'BE': 'To exist',
+                'BI': 'Bisexual person (informal)',
+                'BO': 'A pal or buddy',
+                'BY': 'Near or beside',
+                'CH': 'Obsolete form of "I" (pronoun)',
+                'DA': 'A Burmese knife; also, dad (informal)',
+                'DE': 'Of or from (used in names)',
+                'DI': 'Plural of "deus" (god)',
+                'DO': 'The first note of a musical scale',
+                'ED': 'Education (informal)',
+                'EF': 'The letter F',
+                'EH': 'An exclamation of surprise',
+                'EL': 'The letter L; an elevated railway',
+                'EM': 'The letter M; a unit of type measurement',
+                'EN': 'The letter N; half an em',
+                'ER': 'An exclamation of hesitation',
+                'ES': 'The letter S',
+                'ET': 'Past tense of "eat" (dialect)',
+                'EW': 'An exclamation of disgust',
+                'EX': 'The letter X; a former spouse',
+                'FA': 'The fourth note of a musical scale',
+                'FE': 'A Hebrew letter',
+                'GI': 'A judo or karate uniform',
+                'GO': 'To move or proceed',
+                'GU': 'A type of violin used in Shetland',
+                'HA': 'An exclamation of triumph',
+                'HE': 'A male person',
+                'HI': 'A greeting',
+                'HM': 'An exclamation of thought',
+                'HO': 'An exclamation to attract attention',
+                'ID': 'A part of the psyche',
+                'IF': 'A condition or supposition',
+                'IN': 'Within; inside',
+                'IS': 'Third person singular of "be"',
+                'IT': 'A thing previously mentioned',
+                'JO': 'Scottish word for sweetheart',
+                'KA': 'The spirit or soul in Egyptian mythology',
+                'KI': 'The vital force in Chinese philosophy',
+                'LA': 'The sixth note of a musical scale',
+                'LI': 'A Chinese unit of distance',
+                'LO': 'An exclamation to attract attention',
+                'MA': 'Mother',
+                'ME': 'Objective case of "I"',
+                'MI': 'The third note of a musical scale',
+                'MM': 'An exclamation of satisfaction',
+                'MO': 'A moment (informal)',
+                'MU': 'The twelfth letter of the Greek alphabet',
+                'MY': 'Belonging to me',
+                'NA': 'No; not (Scottish)',
+                'NE': 'Born as (used with maiden names)',
+                'NO': 'A negative response',
+                'NU': 'The thirteenth letter of the Greek alphabet',
+                'OD': 'A hypothetical force; to overdose',
+                'OE': 'A whirlwind off the Faeroe Islands',
+                'OF': 'Belonging to',
+                'OH': 'An exclamation of surprise',
+                'OI': 'An exclamation to attract attention',
+                'OK': 'All right; acceptable',
+                'OM': 'A mantra used in meditation',
+                'ON': 'Positioned above',
+                'OP': 'A style of abstract art',
+                'OR': 'A conjunction indicating alternatives',
+                'OS': 'A bone; an opening',
+                'OU': 'A man (South African)',
+                'OW': 'An exclamation of pain',
+                'OX': 'A bovine animal',
+                'OY': 'An exclamation of dismay',
+                'PA': 'Father',
+                'PE': 'The seventeenth letter of the Hebrew alphabet',
+                'PI': 'The sixteenth letter of the Greek alphabet',
+                'PO': 'A chamber pot (British slang)',
+                'QI': 'The vital force in Chinese philosophy',
+                'RE': 'The second note of a musical scale',
+                'SH': 'An exclamation requesting silence',
+                'SI': 'The seventh note of a musical scale',
+                'SO': 'To such a degree',
+                'ST': 'An exclamation to attract attention',
+                'TA': 'Thank you (British informal)',
+                'TE': 'The seventh note of the musical scale',
+                'TI': 'The seventh note of the musical scale',
+                'TO': 'In the direction of',
+                'UG': 'To cause loathing',
+                'UH': 'An exclamation of hesitation',
+                'UM': 'An exclamation of hesitation',
+                'UN': 'One (dialect)',
+                'UP': 'Toward a higher position',
+                'UR': 'An exclamation of hesitation',
+                'US': 'Objective case of "we"',
+                'UT': 'The first note of a musical scale (archaic)',
+                'WE': 'First person plural pronoun',
+                'WO': 'Woe; grief',
+                'XI': 'The fourteenth letter of the Greek alphabet',
+                'XU': 'A Vietnamese monetary unit',
+                'YA': 'You (informal)',
+                'YE': 'You (archaic)',
+                'YO': 'An exclamation to get attention',
+                'ZA': 'Pizza (slang)',
+                'ZO': 'A Tibetan yak hybrid',
+                // Common unusual words
+                'QOPH': 'The nineteenth letter of the Hebrew alphabet',
+                'QADI': 'A Muslim judge',
+                'QAID': 'A Muslim judge',
+                'QANAT': 'An irrigation tunnel',
+                'QAT': 'A plant whose leaves are chewed as a stimulant',
+                'QAWWALI': 'A type of Muslim devotional music',
+                'QINTAR': 'A monetary unit of Albania',
+                'QINDAR': 'A monetary unit of Albania',
+                'QOPH': 'A Hebrew letter',
+                'QORMA': 'A type of Indian curry',
+                'QWERTY': 'The standard keyboard layout',
+                'SUQS': 'Plural of suq (a marketplace)',
+                'SUQ': 'An Arabian marketplace',
+                'TRANQ': 'A tranquilizer (informal)',
+                'QAIDS': 'Plural of qaid',
+                'QADIS': 'Plural of qadi',
+                'QATS': 'Plural of qat',
+                'CWMS': 'Plural of cwm (a valley)',
+                'CWM': 'A steep-walled basin on a mountain',
+                'CRWTH': 'An ancient Celtic stringed instrument',
+                'CWTCH': 'A cuddle or hiding place (Welsh)',
+                // Common 3-letter Scrabble words
+                'AAH': 'To exclaim in amazement',
+                'AAL': 'An East Indian shrub',
+                'AAS': 'Plural of aa (rough lava)',
+                'ABA': 'A type of coarse fabric',
+                'ABO': 'A blood type classification system',
+                'ABS': 'Abdominal muscles',
+                'ABY': 'To pay for; to atone',
+                'ACE': 'A playing card; to excel',
+                'ACH': 'An exclamation of frustration',
+                'ADO': 'Fuss; trouble',
+                'ADS': 'Plural of ad',
+                'ADZ': 'A woodworking tool',
+                'AFF': 'Off (Scottish)',
+                'AFT': 'Toward the rear of a ship',
+                'AGA': 'A Turkish military commander',
+                'AGE': 'Period of time; to grow old',
+                'AGO': 'In the past',
+                'AGS': 'Plural of ag',
+                'AHA': 'An exclamation of discovery',
+                'AHI': 'A type of tuna',
+                'AHS': 'Plural of ah',
+                'AID': 'Help; assistance',
+                'AIM': 'To point toward a target',
+                'AIN': 'Own (Scottish)',
+                'AIR': 'The atmosphere',
+                'AIS': 'Plural of ai (a sloth)',
+                'AIT': 'A small island',
+                'ALA': 'A wing or winglike part',
+                'ALB': 'A white robe worn by clergy',
+                'ALE': 'A type of beer',
+                'ALF': 'An uncultured Australian',
+                'ALL': 'The whole of',
+                'ALP': 'A high mountain',
+                'ALS': 'Plural of al',
+                'ALT': 'A high-pitched singing voice',
+                'AMA': 'A Japanese pearl diver',
+                'AMI': 'A friend (French)',
+                'AMP': 'A unit of electric current',
+                'AMU': 'A unit of atomic mass',
+                'ANA': 'A collection of someones writings',
+                'ANE': 'One (Scottish)',
+                'ANI': 'A tropical American bird',
+                'ANT': 'A small insect',
+                'ANY': 'One or some',
+                'APE': 'A large primate',
+                'APO': 'Away from; separate',
+                'APP': 'A software application',
+                'APT': 'Appropriate; quick to learn',
+                'ARB': 'One who engages in arbitrage',
+                'ARC': 'A curved line',
+                'ARD': 'A primitive plow',
+                'ARE': 'A unit of area; plural of "be"',
+                'ARF': 'A barking sound',
+                'ARK': 'A large boat',
+                'ARM': 'An upper limb',
+                'ARS': 'Plural of ar',
+                'ART': 'Creative expression',
+                'ASH': 'Residue of burning',
+                'ASK': 'To inquire',
+                'ASP': 'A venomous snake',
+                'ASS': 'A donkey; a foolish person',
+                'ATE': 'Past tense of eat',
+                'ATT': 'A monetary unit of Laos',
+                'AUK': 'A diving seabird',
+                'AVA': 'At all (Scottish)',
+                'AVE': 'An avenue; a greeting',
+                'AVO': 'An avocado (informal)',
+                'AWA': 'Away (Scottish)',
+                'AWE': 'Wonder; amazement',
+                'AWL': 'A pointed tool',
+                'AWN': 'A bristle-like extension',
+                'AXE': 'A chopping tool',
+                'AYE': 'Yes; an affirmative vote',
+                'AYS': 'Plural of ay',
+                'AZO': 'Containing nitrogen',
+                'BAA': 'The cry of a sheep',
+                'BAD': 'Not good',
+                'BAG': 'A container',
+                'BAH': 'An exclamation of contempt',
+                'BAM': 'A sudden loud noise',
+                'BAN': 'To prohibit',
+                'BAP': 'A soft roll',
+                'BAR': 'A rod; a tavern',
+                'BAS': 'Plural of ba',
+                'BAT': 'A flying mammal; a club',
+                'BAY': 'A body of water; to howl',
+                'BED': 'A piece of furniture for sleeping',
+                'BEE': 'A flying insect',
+                'BEG': 'To ask humbly',
+                'BEL': 'A unit of sound intensity',
+                'BEN': 'A mountain peak (Scottish)',
+                'BES': 'Plural of be (letter)',
+                'BET': 'A wager',
+                'BEY': 'A Turkish title of respect',
+                'BIB': 'A cloth worn under the chin',
+                'BID': 'An offer; to command',
+                'BIG': 'Large',
+                'BIN': 'A container',
+                'BIO': 'A biography',
+                'BIS': 'Twice; encore',
+                'BIT': 'A small piece',
+                'BIZ': 'Business (informal)',
+                'BOA': 'A large snake',
+                'BOB': 'To move up and down',
+                'BOD': 'A body (informal)',
+                'BOG': 'A wet, spongy ground',
+                'BOP': 'A style of jazz; to strike',
+                'BOS': 'Plural of bo',
+                'BOT': 'A parasitic larva',
+                'BOW': 'A weapon; to bend forward',
+                'BOX': 'A container',
+                'BOY': 'A male child',
+                'BRA': 'An undergarment',
+                'BRO': 'Brother (informal)',
+                'BRR': 'An exclamation of cold',
+                'BUB': 'A term of address for a man',
+                'BUD': 'An undeveloped flower',
+                'BUG': 'An insect; to annoy',
+                'BUM': 'A vagrant',
+                'BUN': 'A type of bread roll',
+                'BUP': 'To open',
+                'BUR': 'A prickly seed case',
+                'BUS': 'A large vehicle',
+                'BUT': 'However; except',
+                'BUY': 'To purchase',
+                'BYE': 'A farewell; an automatic advance',
+                'BYS': 'Plural of by',
+                // Add more as needed...
+                'ZAP': 'To strike suddenly',
+                'ZAX': 'A tool for cutting roofing slates',
+                'ZED': 'The letter Z',
+                'ZEE': 'The letter Z',
+                'ZEK': 'A prisoner in a Soviet labor camp',
+                'ZEN': 'A school of Buddhism',
+                'ZEP': 'A zeppelin',
+                'ZIG': 'To turn sharply',
+                'ZIN': 'A type of wine (Zinfandel)',
+                'ZIP': 'A fastener; to move quickly',
+                'ZIT': 'A pimple',
+                'ZOA': 'Plural of zoon (an organism)',
+                'ZOO': 'A place where animals are kept',
+                'ZUZ': 'An ancient Hebrew coin',
+                'ZZZ': 'Representing sleep or snoring'
+            };
+            
+            return scrabbleDefinitions[word.toUpperCase()] || null;
         }
         
         // Hook Words Practice variables
@@ -3683,6 +3995,74 @@
                     
                     draggedIndex = null;
                 });
+                
+                // Touch support for mobile
+                let touchDraggedIndex = null;
+                let touchClone = null;
+                
+                letter.addEventListener('touchstart', (e) => {
+                    touchDraggedIndex = parseInt(e.target.dataset.index);
+                    e.target.classList.add('dragging');
+                    
+                    // Create a clone for visual feedback
+                    touchClone = e.target.cloneNode(true);
+                    touchClone.style.position = 'fixed';
+                    touchClone.style.pointerEvents = 'none';
+                    touchClone.style.zIndex = '10000';
+                    touchClone.style.opacity = '0.8';
+                    touchClone.style.transform = 'scale(1.1)';
+                    document.body.appendChild(touchClone);
+                    
+                    const touch = e.touches[0];
+                    touchClone.style.left = (touch.clientX - 25) + 'px';
+                    touchClone.style.top = (touch.clientY - 25) + 'px';
+                }, { passive: true });
+                
+                letter.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    
+                    if (touchClone) {
+                        touchClone.style.left = (touch.clientX - 25) + 'px';
+                        touchClone.style.top = (touch.clientY - 25) + 'px';
+                    }
+                    
+                    // Find element under touch
+                    const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                    document.querySelectorAll('.bingo-letter').forEach(l => l.classList.remove('drag-over'));
+                    
+                    if (elemBelow && elemBelow.classList.contains('bingo-letter') && elemBelow !== e.target) {
+                        elemBelow.classList.add('drag-over');
+                    }
+                }, { passive: false });
+                
+                letter.addEventListener('touchend', (e) => {
+                    e.target.classList.remove('dragging');
+                    document.querySelectorAll('.bingo-letter').forEach(l => l.classList.remove('drag-over'));
+                    
+                    if (touchClone) {
+                        touchClone.remove();
+                        touchClone = null;
+                    }
+                    
+                    const touch = e.changedTouches[0];
+                    const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                    
+                    if (elemBelow && elemBelow.classList.contains('bingo-letter')) {
+                        const dropIndex = parseInt(elemBelow.dataset.index);
+                        
+                        if (touchDraggedIndex !== null && touchDraggedIndex !== dropIndex) {
+                            // Swap letters
+                            const temp = currentBingoLetters[touchDraggedIndex];
+                            currentBingoLetters[touchDraggedIndex] = currentBingoLetters[dropIndex];
+                            currentBingoLetters[dropIndex] = temp;
+                            
+                            renderBingoLetters();
+                        }
+                    }
+                    
+                    touchDraggedIndex = null;
+                });
             });
         }
         
@@ -3818,6 +4198,71 @@
         function updateBingoScore() {
             document.getElementById('bingosFound').textContent = foundBingos.size;
             document.getElementById('bingosTotal').textContent = allBingos.length;
+            
+            // Check if all bingos have been found
+            if (allBingos.length > 0 && foundBingos.size === allBingos.length) {
+                showCelebration('bingo');
+            }
+        }
+        
+        function showCelebration(type) {
+            const messages = {
+                'bingo': ' BINGO! You crushed it! ',
+                'anagram': ' Unreal! You found all the words! Great work! '
+            };
+            
+            const celebrationDiv = document.createElement('div');
+            celebrationDiv.className = 'celebration-message';
+            celebrationDiv.innerHTML = `
+                <div class="celebration-content">
+                    <div class="celebration-text">${messages[type]}</div>
+                    <div class="celebration-subtext">You're a word wizard! </div>
+                </div>
+            `;
+            celebrationDiv.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 30px 50px;
+                border-radius: 20px;
+                font-size: 1.5em;
+                font-weight: 700;
+                text-align: center;
+                z-index: 10000;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+                animation: celebrationPop 0.5s ease-out;
+                border: 4px solid #fff;
+            `;
+            
+            // Add keyframe animation
+            if (!document.getElementById('celebrationStyles')) {
+                const style = document.createElement('style');
+                style.id = 'celebrationStyles';
+                style.textContent = `
+                    @keyframes celebrationPop {
+                        0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+                        50% { transform: translate(-50%, -50%) scale(1.1); }
+                        100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+                    }
+                    .celebration-subtext {
+                        font-size: 0.7em;
+                        margin-top: 10px;
+                        opacity: 0.9;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(celebrationDiv);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                celebrationDiv.style.animation = 'celebrationPop 0.3s ease-in reverse';
+                setTimeout(() => celebrationDiv.remove(), 300);
+            }, 3000);
         }
         
         function revealAllBingos() {
@@ -3986,6 +4431,74 @@
                     
                     draggedIndex = null;
                 });
+                
+                // Touch support for mobile
+                let touchDraggedIndex = null;
+                let touchClone = null;
+                
+                letter.addEventListener('touchstart', (e) => {
+                    touchDraggedIndex = parseInt(e.target.dataset.index);
+                    e.target.classList.add('dragging');
+                    
+                    // Create a clone for visual feedback
+                    touchClone = e.target.cloneNode(true);
+                    touchClone.style.position = 'fixed';
+                    touchClone.style.pointerEvents = 'none';
+                    touchClone.style.zIndex = '10000';
+                    touchClone.style.opacity = '0.8';
+                    touchClone.style.transform = 'scale(1.1)';
+                    document.body.appendChild(touchClone);
+                    
+                    const touch = e.touches[0];
+                    touchClone.style.left = (touch.clientX - 25) + 'px';
+                    touchClone.style.top = (touch.clientY - 25) + 'px';
+                }, { passive: true });
+                
+                letter.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    
+                    if (touchClone) {
+                        touchClone.style.left = (touch.clientX - 25) + 'px';
+                        touchClone.style.top = (touch.clientY - 25) + 'px';
+                    }
+                    
+                    // Find element under touch
+                    const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                    document.querySelectorAll('#anagramLetters .bingo-letter').forEach(l => l.classList.remove('drag-over'));
+                    
+                    if (elemBelow && elemBelow.classList.contains('bingo-letter') && elemBelow !== e.target) {
+                        elemBelow.classList.add('drag-over');
+                    }
+                }, { passive: false });
+                
+                letter.addEventListener('touchend', (e) => {
+                    e.target.classList.remove('dragging');
+                    document.querySelectorAll('#anagramLetters .bingo-letter').forEach(l => l.classList.remove('drag-over'));
+                    
+                    if (touchClone) {
+                        touchClone.remove();
+                        touchClone = null;
+                    }
+                    
+                    const touch = e.changedTouches[0];
+                    const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                    
+                    if (elemBelow && elemBelow.classList.contains('bingo-letter')) {
+                        const dropIndex = parseInt(elemBelow.dataset.index);
+                        
+                        if (touchDraggedIndex !== null && touchDraggedIndex !== dropIndex) {
+                            // Swap letters
+                            const temp = currentAnagramLetters[touchDraggedIndex];
+                            currentAnagramLetters[touchDraggedIndex] = currentAnagramLetters[dropIndex];
+                            currentAnagramLetters[dropIndex] = temp;
+                            
+                            renderAnagramLetters();
+                        }
+                    }
+                    
+                    touchDraggedIndex = null;
+                });
             });
         }
         
@@ -4134,6 +4647,11 @@
         function updateAnagramScore() {
             document.getElementById('anagramsFound').textContent = foundAnagrams.size;
             document.getElementById('anagramsTotal').textContent = allAnagrams.length;
+            
+            // Check if all anagrams have been found
+            if (allAnagrams.length > 0 && foundAnagrams.size === allAnagrams.length) {
+                showCelebration('anagram');
+            }
         }
         
         function revealAllAnagrams() {
@@ -5159,6 +5677,126 @@
                         rack[targetIndex] = temp;
                         renderRack();
                     }
+                });
+                
+                // Touch support for mobile - rack tile dragging
+                let touchStartX, touchStartY;
+                let touchClone = null;
+                let touchTileIndex = null;
+                let touchTileLetter = null;
+                
+                tile.addEventListener('touchstart', (e) => {
+                    if (tile.classList.contains('used')) return;
+                    
+                    const touch = e.touches[0];
+                    touchStartX = touch.clientX;
+                    touchStartY = touch.clientY;
+                    touchTileIndex = idx;
+                    touchTileLetter = letter;
+                    
+                    // Create visual clone after small delay to distinguish from tap
+                    setTimeout(() => {
+                        if (touchTileIndex === idx) {
+                            tile.classList.add('dragging');
+                            touchClone = tile.cloneNode(true);
+                            touchClone.style.position = 'fixed';
+                            touchClone.style.pointerEvents = 'none';
+                            touchClone.style.zIndex = '10000';
+                            touchClone.style.opacity = '0.85';
+                            touchClone.style.transform = 'scale(1.1)';
+                            touchClone.style.width = tile.offsetWidth + 'px';
+                            touchClone.style.height = tile.offsetHeight + 'px';
+                            document.body.appendChild(touchClone);
+                            touchClone.style.left = (touchStartX - tile.offsetWidth/2) + 'px';
+                            touchClone.style.top = (touchStartY - tile.offsetHeight/2) + 'px';
+                        }
+                    }, 150);
+                }, { passive: true });
+                
+                tile.addEventListener('touchmove', (e) => {
+                    if (touchTileIndex === null) return;
+                    e.preventDefault();
+                    
+                    const touch = e.touches[0];
+                    
+                    if (touchClone) {
+                        touchClone.style.left = (touch.clientX - tile.offsetWidth/2) + 'px';
+                        touchClone.style.top = (touch.clientY - tile.offsetHeight/2) + 'px';
+                    }
+                    
+                    // Find element under touch and highlight it
+                    const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                    document.querySelectorAll('.tile').forEach(t => t.classList.remove('drag-over'));
+                    document.querySelectorAll('.cell').forEach(c => c.classList.remove('drop-target'));
+                    
+                    if (elemBelow) {
+                        if (elemBelow.classList.contains('tile') && elemBelow !== tile) {
+                            elemBelow.classList.add('drag-over');
+                        } else if (elemBelow.classList.contains('cell') && !elemBelow.classList.contains('occupied')) {
+                            elemBelow.classList.add('drop-target');
+                        }
+                    }
+                }, { passive: false });
+                
+                tile.addEventListener('touchend', (e) => {
+                    tile.classList.remove('dragging');
+                    document.querySelectorAll('.tile').forEach(t => t.classList.remove('drag-over'));
+                    document.querySelectorAll('.cell').forEach(c => c.classList.remove('drop-target'));
+                    
+                    if (touchClone) {
+                        touchClone.remove();
+                        touchClone = null;
+                    }
+                    
+                    if (touchTileIndex === null) return;
+                    
+                    const touch = e.changedTouches[0];
+                    const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                    
+                    if (elemBelow) {
+                        // Check if dropped on another rack tile (swap)
+                        if (elemBelow.classList.contains('tile')) {
+                            const targetIndex = parseInt(elemBelow.dataset.index);
+                            if (touchTileIndex !== targetIndex) {
+                                const temp = rack[touchTileIndex];
+                                rack[touchTileIndex] = rack[targetIndex];
+                                rack[targetIndex] = temp;
+                                renderRack();
+                            }
+                        }
+                        // Check if dropped on a board cell
+                        else if (elemBelow.classList.contains('cell')) {
+                            const cellIndex = Array.from(document.querySelectorAll('.cell')).indexOf(elemBelow);
+                            const row = Math.floor(cellIndex / 15);
+                            const col = cellIndex % 15;
+                            
+                            // Check if cell is available
+                            if (!board[row][col] && !currentPlay.some(p => p.row === row && p.col === col)) {
+                                if (touchTileLetter === '_') {
+                                    // Handle blank tile
+                                    showBlankModal(row, col, touchTileIndex);
+                                } else {
+                                    // Add tile to current play
+                                    currentPlay.push({row, col, letter: touchTileLetter, isBlank: false});
+                                    
+                                    // Auto-detect direction
+                                    if (currentPlay.length >= 2) {
+                                        const isAcross = currentPlay.every(p => p.row === currentPlay[0].row);
+                                        const isDown = currentPlay.every(p => p.col === currentPlay[0].col);
+                                        if (isAcross) direction = 'across';
+                                        else if (isDown) direction = 'down';
+                                    }
+                                    
+                                    renderBoard();
+                                    renderRack();
+                                    updatePlayPreview();
+                                }
+                            }
+                        }
+                    }
+                    
+                    touchTileIndex = null;
+                    touchTileLetter = null;
                 });
                 
                 rackDiv.appendChild(tile);
@@ -6486,14 +7124,14 @@
                 <p class="mode-subtitle">Choose your game mode</p>
                 
                 <div class="mode-options">
-                    <div class="mode-card" onclick="startGame('free')">
-                        <h2>Free Play</h2>
-                        <p>Practice at your own pace. Play words and see how you compare to the best possible plays.</p>
-                    </div>
-                    
                     <div class="mode-card" onclick="startGame('expert')">
                         <h2>Play Computer</h2>
                         <p>Play against a computer opponent. Choose from beginner, intermediate, or expert difficulty.</p>
+                    </div>
+                    
+                    <div class="mode-card" onclick="startGame('free')">
+                        <h2>Free Play</h2>
+                        <p>Practice at your own pace. Play words and see how you compare to the best possible plays.</p>
                     </div>
                     
                     <div class="mode-card" onclick="openHookWords()">
