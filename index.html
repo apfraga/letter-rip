@@ -2160,6 +2160,274 @@
             padding: 18px 20px;
             font-size: 1.2em;
         }
+        
+        /* ========== iPad/Tablet Mode Styles ========== */
+        
+        /* Tablet-specific layout adjustments */
+        @media (max-width: 1024px) and (min-width: 768px), 
+               (hover: none) and (pointer: coarse) {
+            body.tablet-mode .container {
+                transform: scale(0.75);
+                padding: 15px;
+            }
+            
+            body.tablet-mode .mode-container {
+                transform: scale(0.8);
+                padding: 25px;
+            }
+            
+            body.tablet-mode .board {
+                grid-template-columns: repeat(15, 32px);
+                grid-template-rows: repeat(15, 32px);
+            }
+            
+            body.tablet-mode .cell {
+                font-size: 10px;
+            }
+            
+            body.tablet-mode .cell .letter {
+                font-size: 18px;
+            }
+            
+            body.tablet-mode .cell .points {
+                font-size: 7px;
+            }
+            
+            body.tablet-mode .tile {
+                width: 42px;
+                height: 42px;
+                font-size: 22px;
+            }
+            
+            body.tablet-mode .tile .points {
+                font-size: 10px;
+            }
+            
+            /* Expert mode layout for tablet */
+            body.tablet-mode .expert-game-layout {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            body.tablet-mode .expert-side-panel,
+            body.tablet-mode .expert-right-panel {
+                flex: none;
+                max-width: 100%;
+                width: 100%;
+                order: unset;
+            }
+            
+            body.tablet-mode .expert-side-panel {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: space-around;
+            }
+            
+            body.tablet-mode .side-panel-section {
+                flex: 1 1 45%;
+                min-width: 200px;
+            }
+            
+            body.tablet-mode .expert-right-panel {
+                flex-direction: row;
+                justify-content: center;
+            }
+            
+            body.tablet-mode .side-buttons {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            body.tablet-mode .side-buttons .btn {
+                width: auto;
+                flex: 1 1 auto;
+                min-width: 100px;
+            }
+        }
+        
+        /* Tile selection state for tap-to-place */
+        .tile.selected-for-placement {
+            background: var(--mint) !important;
+            border-color: var(--black) !important;
+            box-shadow: 0 0 0 3px var(--mint), 4px 4px 0px var(--black);
+            transform: scale(1.1);
+        }
+        
+        /* Cell pending placement indicator */
+        .cell.pending-placement {
+            background: var(--sunshine) !important;
+            animation: pulse-pending 1s infinite;
+        }
+        
+        @keyframes pulse-pending {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        /* Tap hint for tablet mode */
+        .tap-hint {
+            display: none;
+            text-align: center;
+            font-size: 0.85em;
+            color: var(--electric-blue);
+            margin-top: 5px;
+            font-weight: 500;
+        }
+        
+        body.tablet-mode .tap-hint {
+            display: block;
+        }
+        
+        body.tablet-mode .drag-hint {
+            display: none;
+        }
+        
+        /* Keyboard input helper overlay */
+        .tablet-keyboard-helper {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--white);
+            border-top: 4px solid var(--black);
+            padding: 15px 20px;
+            z-index: 1500;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+        }
+        
+        .keyboard-helper-content {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .tablet-word-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 20px;
+            font-weight: 700;
+            text-transform: uppercase;
+            border: 3px solid var(--black);
+            border-radius: 12px;
+            background: var(--cream);
+            text-align: center;
+            font-family: 'Nunito', sans-serif;
+        }
+        
+        .tablet-word-input:focus {
+            outline: none;
+            border-color: var(--electric-blue);
+            box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.2);
+        }
+        
+        .direction-toggle {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .dir-btn {
+            flex: 1;
+            padding: 12px 20px;
+            font-size: 1em;
+            font-weight: 600;
+            background: var(--cream);
+            color: var(--black);
+            border: 3px solid var(--black);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: 'Nunito', sans-serif;
+        }
+        
+        .dir-btn.active {
+            background: var(--electric-blue);
+            color: var(--white);
+        }
+        
+        .dir-btn:hover:not(.active) {
+            background: var(--sunshine);
+        }
+        
+        .helper-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .helper-btn {
+            flex: 1;
+            padding: 15px 25px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border: 3px solid var(--black);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: 'Nunito', sans-serif;
+        }
+        
+        .helper-btn.place-btn {
+            background: var(--mint);
+            color: var(--black);
+        }
+        
+        .helper-btn.cancel-btn {
+            background: var(--coral);
+            color: var(--white);
+        }
+        
+        .helper-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        /* Selected cell stronger highlight on tablet */
+        body.tablet-mode .cell.selected {
+            background: var(--mint) !important;
+            border: 3px solid var(--black) !important;
+            box-shadow: inset 0 0 0 2px var(--sunshine);
+            animation: pulse-selected 1.5s infinite;
+        }
+        
+        @keyframes pulse-selected {
+            0%, 100% { box-shadow: inset 0 0 0 2px var(--sunshine); }
+            50% { box-shadow: inset 0 0 0 4px var(--sunshine); }
+        }
+        
+        /* Portrait orientation adjustments for iPad */
+        @media (max-width: 850px) and (orientation: portrait) {
+            body.tablet-mode .container {
+                transform: scale(0.65);
+            }
+            
+            body.tablet-mode .stats {
+                flex-wrap: wrap;
+                padding: 10px;
+            }
+            
+            body.tablet-mode .stat {
+                flex: 1 1 45%;
+                margin: 5px 0;
+            }
+            
+            body.tablet-mode .stat-value {
+                font-size: 1.5em;
+            }
+            
+            body.tablet-mode .controls {
+                flex-wrap: wrap;
+            }
+            
+            body.tablet-mode .controls .btn {
+                flex: 1 1 45%;
+                min-width: 120px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -2246,6 +2514,7 @@
         <div class="rack-container">
             <div class="rack-label">Your Tiles:</div>
             <div class="drag-hint">Drag tiles to the board or click a cell and type. Drag tiles in rack to reorder.</div>
+            <div class="tap-hint">Tap a tile, then tap a cell to place it. Or tap a cell and type a word.</div>
             <div class="rack" id="rack"></div>
         </div>
         
@@ -2845,6 +3114,33 @@
         let computerDefensiveness = 'medium'; // 'low', 'medium', 'high'
         let hideComputerTiles = false; // Option to hide computer's tiles from view
         let showRackBalance = true; // Option to show rack balance analysis
+        
+        // iPad/tablet mode state
+        let isTabletDevice = false;
+        let pendingTilePlacement = null; // {letter, rackIndex, isBlank} - tile waiting to be placed
+        let keyboardInputMode = false; // Track if keyboard input UI is active
+        
+        // Detect tablet/touch devices
+        function detectTablet() {
+            const ua = navigator.userAgent.toLowerCase();
+            const isIpad = /ipad/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            const isAndroidTablet = /android/.test(ua) && !/mobile/.test(ua);
+            const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            const isLargeScreen = window.innerWidth >= 768;
+            isTabletDevice = (isIpad || isAndroidTablet || (isTouchDevice && isLargeScreen));
+            
+            // Add class to body for CSS targeting
+            if (isTabletDevice) {
+                document.body.classList.add('tablet-mode');
+            } else {
+                document.body.classList.remove('tablet-mode');
+            }
+            return isTabletDevice;
+        }
+        
+        // Initialize on load and resize
+        window.addEventListener('load', detectTablet);
+        window.addEventListener('resize', detectTablet);
         
         // Show blank tile letter selection modal
         function showBlankModal(row, col, rackIndex) {
@@ -5650,6 +5946,43 @@
                     <span class="points">${LETTER_POINTS[letter] || 0}</span>
                 `;
                 
+                // Check if this tile is selected for placement (tablet mode)
+                if (pendingTilePlacement && pendingTilePlacement.rackIndex === idx) {
+                    tile.classList.add('selected-for-placement');
+                }
+                
+                // Click/tap handler for tablet mode tap-to-place
+                tile.addEventListener('click', (e) => {
+                    if (tile.classList.contains('used')) return;
+                    
+                    // On tablet, tap to select tile for placement
+                    if (isTabletDevice) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        // If this tile is already selected, deselect it
+                        if (pendingTilePlacement && pendingTilePlacement.rackIndex === idx) {
+                            pendingTilePlacement = null;
+                            renderRack();
+                            return;
+                        }
+                        
+                        // Select this tile for placement
+                        pendingTilePlacement = {
+                            letter: letter,
+                            rackIndex: idx,
+                            isBlank: letter === '_'
+                        };
+                        
+                        renderRack();
+                        
+                        // Show feedback
+                        if (!selectedCell) {
+                            showFeedback('Tile selected! Now tap a cell on the board to place it.', 'info');
+                        }
+                    }
+                });
+                
                 // Drag and drop events
                 tile.addEventListener('dragstart', (e) => {
                     if (tile.classList.contains('used')) {
@@ -5916,11 +6249,211 @@
             // Don't allow selecting occupied cells
             if (board[row][col]) return;
             
+            // Check if this cell already has a current play tile
+            const existingPlayIndex = currentPlay.findIndex(p => p.row === row && p.col === col);
+            if (existingPlayIndex !== -1) {
+                // Remove tile from current play (return to rack)
+                currentPlay.splice(existingPlayIndex, 1);
+                pendingTilePlacement = null;
+                renderBoard();
+                renderRack();
+                updatePlayPreview();
+                return;
+            }
+            
+            // iPad/tablet tap-to-place mode
+            if (isTabletDevice && pendingTilePlacement) {
+                // Place the pending tile at this cell
+                const { letter, rackIndex, isBlank } = pendingTilePlacement;
+                
+                if (isBlank) {
+                    // Show blank modal to select letter
+                    showBlankModal(row, col, rackIndex);
+                } else {
+                    // Place the tile
+                    currentPlay.push({ row, col, letter, isBlank: false });
+                    
+                    // Auto-detect direction based on current play
+                    if (currentPlay.length >= 2) {
+                        const isAcross = currentPlay.every(p => p.row === currentPlay[0].row);
+                        const isDown = currentPlay.every(p => p.col === currentPlay[0].col);
+                        if (isAcross) direction = 'across';
+                        else if (isDown) direction = 'down';
+                    }
+                }
+                
+                // Clear pending tile
+                pendingTilePlacement = null;
+                renderBoard();
+                renderRack();
+                updatePlayPreview();
+                return;
+            }
+            
+            // Standard selection (for keyboard input or desktop)
             selectedCell = {row, col};
             renderBoard();
             
             // Focus on window to capture keyboard events
             window.focus();
+            
+            // On tablet, show keyboard input helper if cell is selected
+            if (isTabletDevice) {
+                showKeyboardInputHelper();
+            }
+        }
+        
+        // Show keyboard input helper for tablet
+        function showKeyboardInputHelper() {
+            let helper = document.getElementById('tabletKeyboardHelper');
+            if (!helper) {
+                helper = document.createElement('div');
+                helper.id = 'tabletKeyboardHelper';
+                helper.className = 'tablet-keyboard-helper';
+                helper.innerHTML = `
+                    <div class="keyboard-helper-content">
+                        <input type="text" id="tabletWordInput" class="tablet-word-input" 
+                               placeholder="Type word here..." autocomplete="off" autocapitalize="characters"
+                               oninput="this.value = this.value.toUpperCase()">
+                        <div class="direction-toggle">
+                            <button class="dir-btn active" data-dir="across" onclick="setDirectionFromHelper('across')">→ Across</button>
+                            <button class="dir-btn" data-dir="down" onclick="setDirectionFromHelper('down')">↓ Down</button>
+                        </div>
+                        <div class="helper-buttons">
+                            <button class="helper-btn place-btn" onclick="placeWordFromInput()">Place Word</button>
+                            <button class="helper-btn cancel-btn" onclick="hideKeyboardInputHelper()">Cancel</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(helper);
+                
+                // Add Enter key handler to input
+                helper.querySelector('#tabletWordInput').addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        placeWordFromInput();
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        hideKeyboardInputHelper();
+                    }
+                });
+            }
+            
+            helper.style.display = 'flex';
+            keyboardInputMode = true;
+            
+            // Update direction buttons
+            document.querySelectorAll('.dir-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.dir === direction);
+            });
+            
+            // Focus the input
+            setTimeout(() => {
+                const input = document.getElementById('tabletWordInput');
+                if (input) {
+                    input.value = '';
+                    input.focus();
+                }
+            }, 100);
+        }
+        
+        function hideKeyboardInputHelper() {
+            const helper = document.getElementById('tabletKeyboardHelper');
+            if (helper) {
+                helper.style.display = 'none';
+            }
+            keyboardInputMode = false;
+            selectedCell = null;
+            renderBoard();
+        }
+        
+        function setDirectionFromHelper(dir) {
+            direction = dir;
+            document.querySelectorAll('.dir-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.dir === dir);
+            });
+        }
+        
+        function placeWordFromInput() {
+            if (!selectedCell) {
+                showFeedback('Please select a starting cell on the board first!', 'error');
+                return;
+            }
+            
+            const input = document.getElementById('tabletWordInput');
+            const word = input.value.toUpperCase().trim();
+            
+            if (!word) {
+                showFeedback('Please type a word first!', 'error');
+                return;
+            }
+            
+            // Clear any existing play
+            currentPlay = [];
+            
+            let { row, col } = selectedCell;
+            
+            // Try to place each letter
+            for (let i = 0; i < word.length; i++) {
+                const letter = word[i];
+                
+                // Check bounds
+                if (row >= 15 || col >= 15) {
+                    showFeedback(`Word doesn't fit on board in that direction!`, 'error');
+                    currentPlay = [];
+                    renderBoard();
+                    renderRack();
+                    return;
+                }
+                
+                // Check if cell is already occupied on the board
+                if (board[row][col]) {
+                    // Must match existing letter
+                    if (board[row][col] !== letter) {
+                        showFeedback(`Letter ${letter} conflicts with existing tile at position ${i+1}!`, 'error');
+                        currentPlay = [];
+                        renderBoard();
+                        renderRack();
+                        return;
+                    }
+                    // Skip this position (already on board)
+                } else {
+                    // Need to place from rack
+                    const usedLetters = currentPlay.filter(p => !p.isBlank).map(p => p.letter);
+                    const usedBlanks = currentPlay.filter(p => p.isBlank).length;
+                    const availableBlanks = rack.filter(l => l === '_').length - usedBlanks;
+                    
+                    const availableCount = rack.filter(l => l === letter).length;
+                    const usedCount = usedLetters.filter(l => l === letter).length;
+                    
+                    if (usedCount < availableCount) {
+                        // Use regular tile
+                        currentPlay.push({ row, col, letter, isBlank: false });
+                    } else if (availableBlanks > 0) {
+                        // Use blank
+                        currentPlay.push({ row, col, letter, isBlank: true });
+                    } else {
+                        showFeedback(`You don't have the letter ${letter}!`, 'error');
+                        currentPlay = [];
+                        renderBoard();
+                        renderRack();
+                        return;
+                    }
+                }
+                
+                // Move to next position
+                if (direction === 'across') {
+                    col++;
+                } else {
+                    row++;
+                }
+            }
+            
+            // Success! Update display
+            hideKeyboardInputHelper();
+            renderBoard();
+            renderRack();
+            updatePlayPreview();
         }
         
         function updatePlayPreview() {
@@ -5983,6 +6516,16 @@
         
         // Handle keyboard input
         document.addEventListener('keydown', (e) => {
+            // Skip if user is typing in an input field
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                return;
+            }
+            
+            // Skip if keyboard input helper is active on tablet
+            if (keyboardInputMode) {
+                return;
+            }
+            
             // Arrow keys to change direction
             if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
                 e.preventDefault();
@@ -6060,6 +6603,8 @@
         function clearPlay() {
             currentPlay = [];
             selectedCell = null;
+            pendingTilePlacement = null; // Clear pending tile for tablet mode
+            hideKeyboardInputHelper(); // Hide keyboard helper if open
             clearHighlights();
             renderBoard();
             renderRack();
