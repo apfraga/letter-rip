@@ -2171,6 +2171,20 @@
             transform: scale(1.1);
         }
         
+        /* Tablet mode toggle button */
+        .btn-tablet-toggle {
+            background: var(--cream);
+            color: var(--black);
+            flex: 0 0 auto;
+            min-width: 50px;
+            font-size: 1.2em;
+        }
+        
+        body.tablet-mode .btn-tablet-toggle {
+            background: var(--electric-blue);
+            color: white;
+        }
+        
         /* Tap hint - hidden by default, shown on tablet */
         .tap-hint {
             display: none;
@@ -2390,8 +2404,11 @@
             <div class="dictionary-warning" id="dictionaryWarning">
                 <div class="dictionary-warning-title">⚠️ Limited Dictionary Mode</div>
                 <div class="dictionary-warning-text">
-                    Could not load the full Scrabble dictionary. Playing with a restricted word list of common words only. 
-                    Some valid Scrabble words may not be recognized. Try refreshing the page to attempt loading the full dictionary again.
+                    Could not load the full Scrabble dictionary. Playing with 2-letter words only.<br><br>
+                    <strong>To fix:</strong> Download the NWL2020 dictionary from 
+                    <a href="https://raw.githubusercontent.com/scrabblewords/scrabblewords/main/words/North-American/NWL2020.txt" target="_blank" style="color: #0077b6;">this link</a>, 
+                    rename it to <code>scrabble-dictionary.txt</code>, and place it in the same folder as this game file. Then refresh the page.<br><br>
+                    <em>Note: NWL2020 is the current North American tournament dictionary (~192,000 words including BING, etc.)</em>
                 </div>
             </div>
             
@@ -2485,6 +2502,7 @@
             <button class="btn btn-clear" onclick="shuffleRack()">Shuffle</button>
             <button class="btn btn-clear" onclick="openSwapModal()" id="swapBtn">Swap Tiles</button>
             <button class="btn btn-skip" onclick="skipTurn()" id="skipBtn">Pass Turn</button>
+            <button class="btn btn-tablet-toggle" onclick="toggleTabletMode()" title="Toggle tablet tap mode">📱</button>
         </div>
         
         <div class="submit-container">
@@ -2932,37 +2950,71 @@
     </div>
 
     <script>
-        // Scrabble dictionary - will be loaded from GitHub
+        // Scrabble dictionary - will be loaded from local file or GitHub
         let DICTIONARY = new Set();
         let dictionaryLoaded = false;
         let usingFallbackDictionary = false;
         
-        // Dictionary sources in order of preference (NWL2023 is the current official tournament dictionary)
+        // Dictionary sources in order of preference:
+        // 1. Local file (same folder as HTML) - most reliable
+        // 2. GitHub sources as backup (NWL2020 is current, has BING etc)
         const DICTIONARY_SOURCES = [
-            'https://raw.githubusercontent.com/scrabblewords/scrabblewords/main/words/North-American/NSWL2023.txt',
-            'https://raw.githubusercontent.com/scrabblewords/scrabblewords/main/words/North-American/NSWL2020.txt',
-            'https://raw.githubusercontent.com/redbo/scrabble/master/dictionary.txt'
+            { url: 'scrabble-dictionary.txt', hasDefinitions: false },
+            { url: 'NWL2020.txt', hasDefinitions: false },
+            { url: 'https://raw.githubusercontent.com/scrabblewords/scrabblewords/main/words/North-American/NWL2020.txt', hasDefinitions: true },
+            { url: 'https://raw.githubusercontent.com/kamilmielnik/scrabble-dictionaries/master/english/TWL06.txt', hasDefinitions: false }
         ];
         
-        // Load the official Scrabble dictionary (NWL2023 - current tournament standard)
+        // Load the official Scrabble dictionary
         async function loadDictionary() {
             for (const source of DICTIONARY_SOURCES) {
                 try {
-                    console.log(`Attempting to load dictionary from: ${source}`);
-                    const response = await fetch(source);
-                    if (!response.ok) throw new Error(`Failed to fetch from ${source}`);
+                    console.log(`Attempting to load dictionary from: ${source.url}`);
+                    const response = await fetch(source.url);
+                    if (!response.ok) throw new Error(`Failed to fetch from ${source.url}`);
                     const text = await response.text();
-                    // Handle both newline-separated and space-separated formats
-                    const words = text.split(/[\n\r\s]+/).map(w => w.trim().toUpperCase()).filter(w => w.length > 0 && /^[A-Z]+$/.test(w));
+                    
+                    let words;
+                    if (source.hasDefinitions) {
+                        // NWL format: "WORD definition [tags]" - extract just the word (first token on each line)
+                        words = text.split(/[\n\r]+/)
+                            .map(line => {
+                                const firstWord = line.trim().split(/\s+/)[0];
+                                return firstWord ? firstWord.toUpperCase() : '';
+                            })
+                            .filter(w => w.length >= 2 && w.length <= 15 && /^[A-Z]+$/.test(w));
+                    } else {
+                        // Plain word list - one word per line
+                        words = text.split(/[\n\r\s]+/)
+                            .map(w => w.trim().toUpperCase())
+                            .filter(w => w.length >= 2 && w.length <= 15 && /^[A-Z]+$/.test(w));
+                    }
+                    
                     if (words.length < 1000) throw new Error('Dictionary too small, trying next source');
                     DICTIONARY = new Set(words);
                     dictionaryLoaded = true;
                     usingFallbackDictionary = false;
-                    console.log(`Dictionary loaded from ${source}: ${DICTIONARY.size} words`);
+                    console.log(`Dictionary loaded from ${source.url}: ${DICTIONARY.size} words`);
+                    
+                    // Verify it's a real Scrabble dictionary
+                    const hasQI = DICTIONARY.has('QI');
+                    const hasZA = DICTIONARY.has('ZA');
+                    const hasBING = DICTIONARY.has('BING');  // Added in 2014
+                    const hasLSD = DICTIONARY.has('LSD');    // Should NOT be valid
+                    
+                    if (hasQI && hasZA && !hasLSD) {
+                        console.log('Dictionary validation passed. QI:', hasQI, 'ZA:', hasZA, 'BING:', hasBING);
+                        if (!hasBING) {
+                            console.warn('Dictionary may be outdated (pre-2014) - missing BING');
+                        }
+                    } else {
+                        console.warn('Dictionary may contain non-Scrabble words. QI:', hasQI, 'ZA:', hasZA, 'LSD:', hasLSD);
+                    }
+                    
                     hideDictionaryWarning();
                     return true;
                 } catch (error) {
-                    console.warn(`Failed to load from ${source}:`, error.message);
+                    console.warn(`Failed to load from ${source.url}:`, error.message);
                     continue;
                 }
             }
@@ -2971,39 +3023,32 @@
             console.error('All dictionary sources failed, using fallback');
             usingFallbackDictionary = true;
             showDictionaryWarning();
-            // Fallback to basic dictionary
+            // Fallback to verified Scrabble 2-letter words only
             DICTIONARY = new Set([
-                // 2-letter words (official)
                 'AA', 'AB', 'AD', 'AE', 'AG', 'AH', 'AI', 'AL', 'AM', 'AN', 'AR', 'AS', 'AT', 'AW', 'AX', 'AY',
-                'BA', 'BE', 'BI', 'BO', 'BY', 'DA', 'DE', 'DO', 'ED', 'EF', 'EH', 'EL', 'EM', 'EN', 'ER', 'ES', 'ET', 'EX',
-                'FA', 'FE', 'GI', 'GO', 'HA', 'HE', 'HI', 'HM', 'HO', 'ID', 'IF', 'IN', 'IS', 'IT', 'JO', 'KA', 'KI', 'LA', 'LI', 'LO',
-                'MA', 'ME', 'MI', 'MM', 'MO', 'MU', 'MY', 'NA', 'NE', 'NO', 'NU', 'OD', 'OE', 'OF', 'OH', 'OI', 'OK', 'OM', 'ON', 'OP', 'OR', 'OS', 'OW', 'OX', 'OY',
-                'PA', 'PE', 'PI', 'PO', 'QI', 'RE', 'SH', 'SI', 'SO', 'TA', 'TI', 'TO', 'UH', 'UM', 'UN', 'UP', 'US', 'UT', 'WE', 'WO', 'XI', 'XU', 'YA', 'YE', 'YO', 'ZA',
-                // Common 3-letter words
-                'ACE', 'ACT', 'ADD', 'ADO', 'ADS', 'AFT', 'AGE', 'AGO', 'AID', 'AIM', 'AIR', 'ALE', 'ALL', 'AND', 'ANT', 'ANY', 'APE', 'ARC', 'ARE', 'ARK', 'ARM', 'ART', 'ASH', 'ASK', 'ATE', 'AWE', 'AXE',
-                'BAD', 'BAG', 'BAN', 'BAR', 'BAT', 'BAY', 'BED', 'BEE', 'BET', 'BIG', 'BIN', 'BING', 'BIT', 'BOB', 'BOG', 'BOW', 'BOX', 'BOY', 'BRA', 'BUD', 'BUG', 'BUM', 'BUN', 'BUS', 'BUT', 'BUY',
-                'CAB', 'CAM', 'CAN', 'CAP', 'CAR', 'CAT', 'COB', 'COD', 'COG', 'COP', 'COT', 'COW', 'COX', 'COY', 'CRY', 'CUB', 'CUD', 'CUE', 'CUP', 'CUR', 'CUT',
-                'DAB', 'DAD', 'DAM', 'DAY', 'DEN', 'DEW', 'DID', 'DIE', 'DIG', 'DIM', 'DIN', 'DIP', 'DOC', 'DOE', 'DOG', 'DON', 'DOT', 'DRY', 'DUB', 'DUD', 'DUE', 'DUG', 'DUN', 'DUO', 'DYE',
-                'EAR', 'EAT', 'EEL', 'EGG', 'EGO', 'ELF', 'ELK', 'ELM', 'EMU', 'END', 'ERA', 'ERR', 'EVE', 'EWE', 'EYE',
-                'FAD', 'FAN', 'FAR', 'FAT', 'FAX', 'FED', 'FEE', 'FEN', 'FEW', 'FIG', 'FIN', 'FIR', 'FIT', 'FIX', 'FLU', 'FLY', 'FOB', 'FOE', 'FOG', 'FOP', 'FOR', 'FOX', 'FRY', 'FUN', 'FUR',
-                'GAB', 'GAG', 'GAL', 'GAP', 'GAS', 'GAY', 'GEL', 'GEM', 'GET', 'GIG', 'GIN', 'GNU', 'GOB', 'GOD', 'GOT', 'GUM', 'GUN', 'GUT', 'GUY', 'GYM',
-                'HAD', 'HAG', 'HAM', 'HAS', 'HAT', 'HAY', 'HEM', 'HEN', 'HER', 'HEW', 'HEX', 'HEY', 'HID', 'HIM', 'HIP', 'HIS', 'HIT', 'HOB', 'HOD', 'HOE', 'HOG', 'HOP', 'HOT', 'HOW', 'HUB', 'HUE', 'HUG', 'HUM', 'HUT',
-                'ICE', 'ICY', 'ILL', 'IMP', 'INK', 'INN', 'ION', 'IRE', 'IRK', 'ITS', 'IVY',
-                'JAB', 'JAG', 'JAM', 'JAR', 'JAW', 'JAY', 'JET', 'JIG', 'JOB', 'JOG', 'JOT', 'JOY', 'JUG', 'JUT',
-                'KEG', 'KEN', 'KEY', 'KID', 'KIN', 'KIT',
-                'LAB', 'LAC', 'LAD', 'LAG', 'LAP', 'LAW', 'LAX', 'LAY', 'LEA', 'LED', 'LEG', 'LET', 'LID', 'LIE', 'LIP', 'LIT', 'LOG', 'LOT', 'LOW', 'LUG',
-                'MAD', 'MAN', 'MAP', 'MAR', 'MAT', 'MAW', 'MAX', 'MAY', 'MEN', 'MET', 'MID', 'MIX', 'MOB', 'MOM', 'MOP', 'MOW', 'MUD', 'MUG', 'MUM',
-                'NAB', 'NAG', 'NAP', 'NAY', 'NET', 'NEW', 'NIB', 'NIL', 'NIT', 'NOB', 'NOD', 'NOR', 'NOT', 'NOW', 'NUB', 'NUN', 'NUT',
-                'OAK', 'OAR', 'OAT', 'ODD', 'ODE', 'OFF', 'OFT', 'OHM', 'OIL', 'OLD', 'ONE', 'OPT', 'ORB', 'ORE', 'OUR', 'OUT', 'OWE', 'OWL', 'OWN',
-                'PAD', 'PAL', 'PAN', 'PAP', 'PAR', 'PAT', 'PAW', 'PAX', 'PAY', 'PEA', 'PEG', 'PEN', 'PEP', 'PER', 'PET', 'PEW', 'PIE', 'PIG', 'PIN', 'PIT', 'PLY', 'POD', 'POP', 'POT', 'POW', 'POX', 'PRO', 'PRY', 'PUB', 'PUG', 'PUN', 'PUP', 'PUS', 'PUT',
-                'RAD', 'RAG', 'RAM', 'RAN', 'RAP', 'RAT', 'RAW', 'RAY', 'RED', 'REF', 'REP', 'RIB', 'RID', 'RIG', 'RIM', 'RIP', 'ROB', 'ROD', 'ROE', 'ROT', 'ROW', 'RUB', 'RUG', 'RUM', 'RUN', 'RUT', 'RYE',
-                'SAC', 'SAD', 'SAG', 'SAP', 'SAT', 'SAW', 'SAX', 'SAY', 'SEA', 'SET', 'SEW', 'SEX', 'SHE', 'SHY', 'SIN', 'SIP', 'SIR', 'SIS', 'SIT', 'SIX', 'SKI', 'SKY', 'SLY', 'SOB', 'SOD', 'SON', 'SOP', 'SOT', 'SOW', 'SOX', 'SOY', 'SPA', 'SPY', 'STY', 'SUB', 'SUM', 'SUN', 'SUP',
-                'TAB', 'TAD', 'TAG', 'TAN', 'TAP', 'TAR', 'TAT', 'TAX', 'TEA', 'TEN', 'THE', 'THY', 'TIC', 'TIE', 'TIN', 'TIP', 'TOE', 'TON', 'TOO', 'TOP', 'TOT', 'TOW', 'TOY', 'TRY', 'TUB', 'TUG', 'TUN', 'TUX', 'TWO',
-                'UGH', 'UMP', 'UNS', 'UPO', 'UPS', 'URN', 'USE', 'UTA', 'UTS',
-                'VAN', 'VAT', 'VET', 'VEX', 'VIA', 'VIE', 'VIM', 'VOW',
-                'WAD', 'WAG', 'WAR', 'WAS', 'WAX', 'WAY', 'WEB', 'WED', 'WEE', 'WET', 'WHO', 'WHY', 'WIG', 'WIN', 'WIT', 'WOE', 'WOK', 'WON', 'WOO', 'WOW',
-                'YAK', 'YAM', 'YAP', 'YAW', 'YEA', 'YEP', 'YES', 'YET', 'YEW', 'YIN', 'YIP', 'YOU', 'YOW', 'YUK', 'YUM', 'YUP',
-                'ZAP', 'ZED', 'ZEE', 'ZEN', 'ZIG', 'ZIP', 'ZIT', 'ZOO'
+                'BA', 'BE', 'BI', 'BO', 'BY', 
+                'DA', 'DE', 'DO', 
+                'ED', 'EF', 'EH', 'EL', 'EM', 'EN', 'ER', 'ES', 'ET', 'EW', 'EX',
+                'FA', 'FE', 
+                'GI', 'GO', 
+                'HA', 'HE', 'HI', 'HM', 'HO', 
+                'ID', 'IF', 'IN', 'IS', 'IT', 
+                'JO', 
+                'KA', 'KI', 
+                'LA', 'LI', 'LO',
+                'MA', 'ME', 'MI', 'MM', 'MO', 'MU', 'MY', 
+                'NA', 'NE', 'NO', 'NU', 
+                'OD', 'OE', 'OF', 'OH', 'OI', 'OK', 'OM', 'ON', 'OP', 'OR', 'OS', 'OU', 'OW', 'OX', 'OY',
+                'PA', 'PE', 'PI', 'PO', 
+                'QI', 
+                'RE', 
+                'SH', 'SI', 'SO', 
+                'TA', 'TE', 'TI', 'TO',
+                'UH', 'UM', 'UN', 'UP', 'US', 'UT', 
+                'WE', 'WO', 
+                'XI', 'XU', 
+                'YA', 'YE', 'YO', 
+                'ZA'
             ]);
             dictionaryLoaded = true;
             return false;
@@ -3082,7 +3127,27 @@
             const isAndroidTablet = /android/.test(ua) && !/mobile/.test(ua);
             const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
             const isLargeScreen = window.innerWidth >= 768;
-            isTabletDevice = (isIpad || isAndroidTablet || (isTouchDevice && isLargeScreen));
+            
+            // Also detect browser emulation mode (check for mobile user agent strings)
+            const isMobileEmulation = /mobile|iphone|ipod|android/.test(ua) && isLargeScreen;
+            const isTabletEmulation = /ipad/.test(ua);
+            
+            // Check if viewport suggests tablet dimensions (between phone and desktop)
+            const viewportWidth = window.innerWidth;
+            const isTabletViewport = viewportWidth >= 768 && viewportWidth <= 1366;
+            
+            isTabletDevice = isIpad || isAndroidTablet || isTabletEmulation || 
+                            (isTouchDevice && isLargeScreen) || 
+                            (isMobileEmulation && isTabletViewport);
+            
+            // Allow manual override via URL parameter: ?tablet=1
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('tablet') === '1') {
+                isTabletDevice = true;
+            }
+            if (urlParams.get('tablet') === '0') {
+                isTabletDevice = false;
+            }
             
             if (isTabletDevice) {
                 document.body.classList.add('tablet-mode');
@@ -3090,6 +3155,18 @@
                 document.body.classList.remove('tablet-mode');
             }
             return isTabletDevice;
+        }
+        
+        // Manual toggle for tablet mode (for testing)
+        function toggleTabletMode() {
+            isTabletDevice = !isTabletDevice;
+            if (isTabletDevice) {
+                document.body.classList.add('tablet-mode');
+                showFeedback('Tablet mode ON - tap tiles then cells to place', 'info');
+            } else {
+                document.body.classList.remove('tablet-mode');
+                showFeedback('Tablet mode OFF - drag tiles to place', 'info');
+            }
         }
         
         // Initialize on load and resize
