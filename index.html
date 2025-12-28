@@ -2959,8 +2959,8 @@
         // 1. Local file (same folder as HTML) - most reliable
         // 2. GitHub sources as backup (NWL2020 is current, has BING etc)
         const DICTIONARY_SOURCES = [
-            { url: 'scrabble-dictionary.txt', hasDefinitions: false },
-            { url: 'NWL2020.txt', hasDefinitions: false },
+            { url: 'scrabble-dictionary.txt', hasDefinitions: 'auto' },
+            { url: 'NWL2020.txt', hasDefinitions: 'auto' },
             { url: 'https://raw.githubusercontent.com/scrabblewords/scrabblewords/main/words/North-American/NWL2020.txt', hasDefinitions: true },
             { url: 'https://raw.githubusercontent.com/kamilmielnik/scrabble-dictionaries/master/english/TWL06.txt', hasDefinitions: false }
         ];
@@ -2974,20 +2974,29 @@
                     if (!response.ok) throw new Error(`Failed to fetch from ${source.url}`);
                     const text = await response.text();
                     
+                    // Split into lines
+                    const lines = text.split(/[\n\r]+/).filter(line => line.trim().length > 0);
+                    
+                    // Detect format: if first line has a space after the first word, it has definitions
+                    const firstLine = lines[0] || '';
+                    const hasDefinitions = source.hasDefinitions === true || 
+                        (source.hasDefinitions === 'auto' && /^[A-Z]+ [^A-Z]/.test(firstLine));
+                    
                     let words;
-                    if (source.hasDefinitions) {
-                        // NWL format: "WORD definition [tags]" - extract just the word (first token on each line)
-                        words = text.split(/[\n\r]+/)
-                            .map(line => {
-                                const firstWord = line.trim().split(/\s+/)[0];
-                                return firstWord ? firstWord.toUpperCase() : '';
+                    if (hasDefinitions) {
+                        // NWL format: "WORD definition [tags]"
+                        // Extract ONLY the first word (all caps) at the start of each line
+                        words = lines.map(line => {
+                                const match = line.match(/^([A-Z]+)\s/);
+                                return match ? match[1] : '';
                             })
-                            .filter(w => w.length >= 2 && w.length <= 15 && /^[A-Z]+$/.test(w));
+                            .filter(w => w.length >= 2 && w.length <= 15);
+                        console.log('Detected dictionary WITH definitions, extracting first word per line');
                     } else {
-                        // Plain word list - one word per line
-                        words = text.split(/[\n\r\s]+/)
-                            .map(w => w.trim().toUpperCase())
+                        // Plain word list - one word per line (no definitions)
+                        words = lines.map(w => w.trim().toUpperCase())
                             .filter(w => w.length >= 2 && w.length <= 15 && /^[A-Z]+$/.test(w));
+                        console.log('Detected plain word list (no definitions)');
                     }
                     
                     if (words.length < 1000) throw new Error('Dictionary too small, trying next source');
@@ -2999,16 +3008,16 @@
                     // Verify it's a real Scrabble dictionary
                     const hasQI = DICTIONARY.has('QI');
                     const hasZA = DICTIONARY.has('ZA');
-                    const hasBING = DICTIONARY.has('BING');  // Added in 2014
-                    const hasLSD = DICTIONARY.has('LSD');    // Should NOT be valid
+                    const hasBING = DICTIONARY.has('BING');
+                    const hasLSD = DICTIONARY.has('LSD');     // Should NOT exist
+                    const hasIRAQ = DICTIONARY.has('IRAQ');   // Should NOT exist (proper noun)
                     
-                    if (hasQI && hasZA && !hasLSD) {
-                        console.log('Dictionary validation passed. QI:', hasQI, 'ZA:', hasZA, 'BING:', hasBING);
-                        if (!hasBING) {
-                            console.warn('Dictionary may be outdated (pre-2014) - missing BING');
-                        }
+                    console.log('Dictionary validation - QI:', hasQI, 'ZA:', hasZA, 'BING:', hasBING, 'LSD:', hasLSD, 'IRAQ:', hasIRAQ);
+                    
+                    if (hasQI && hasZA && !hasLSD && !hasIRAQ) {
+                        console.log('Dictionary validation PASSED');
                     } else {
-                        console.warn('Dictionary may contain non-Scrabble words. QI:', hasQI, 'ZA:', hasZA, 'LSD:', hasLSD);
+                        console.warn('Dictionary validation WARNING - may contain invalid words');
                     }
                     
                     hideDictionaryWarning();
