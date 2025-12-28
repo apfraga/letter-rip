@@ -2712,60 +2712,76 @@
         let dictionaryLoaded = false;
         let usingFallbackDictionary = false;
         
-        // Load the official Scrabble dictionary
+        // Dictionary sources in order of preference (NWL2023 is the current official tournament dictionary)
+        const DICTIONARY_SOURCES = [
+            'https://raw.githubusercontent.com/scrabblewords/scrabblewords/main/words/North-American/NSWL2023.txt',
+            'https://raw.githubusercontent.com/scrabblewords/scrabblewords/main/words/North-American/NSWL2020.txt',
+            'https://raw.githubusercontent.com/redbo/scrabble/master/dictionary.txt'
+        ];
+        
+        // Load the official Scrabble dictionary (NWL2023 - current tournament standard)
         async function loadDictionary() {
-            try {
-                const response = await fetch('https://raw.githubusercontent.com/redbo/scrabble/master/dictionary.txt');
-                if (!response.ok) throw new Error('Failed to fetch');
-                const text = await response.text();
-                const words = text.split('\n').map(w => w.trim().toUpperCase()).filter(w => w.length > 0);
-                DICTIONARY = new Set(words);
-                dictionaryLoaded = true;
-                usingFallbackDictionary = false;
-                console.log(`Dictionary loaded: ${DICTIONARY.size} words`);
-                hideDictionaryWarning();
-                return true;
-            } catch (error) {
-                console.error('Failed to load dictionary from GitHub, using fallback:', error);
-                usingFallbackDictionary = true;
-                showDictionaryWarning();
-                // Fallback to basic dictionary
-                DICTIONARY = new Set([
-                    // 2-letter words (official)
-                    'AA', 'AB', 'AD', 'AE', 'AG', 'AH', 'AI', 'AL', 'AM', 'AN', 'AR', 'AS', 'AT', 'AW', 'AX', 'AY',
-                    'BA', 'BE', 'BI', 'BO', 'BY', 'DA', 'DE', 'DO', 'ED', 'EF', 'EH', 'EL', 'EM', 'EN', 'ER', 'ES', 'ET', 'EX',
-                    'FA', 'FE', 'GI', 'GO', 'HA', 'HE', 'HI', 'HM', 'HO', 'ID', 'IF', 'IN', 'IS', 'IT', 'JO', 'KA', 'KI', 'LA', 'LI', 'LO',
-                    'MA', 'ME', 'MI', 'MM', 'MO', 'MU', 'MY', 'NA', 'NE', 'NO', 'NU', 'OD', 'OE', 'OF', 'OH', 'OI', 'OK', 'OM', 'ON', 'OP', 'OR', 'OS', 'OW', 'OX', 'OY',
-                    'PA', 'PE', 'PI', 'PO', 'QI', 'RE', 'SH', 'SI', 'SO', 'TA', 'TI', 'TO', 'UH', 'UM', 'UN', 'UP', 'US', 'UT', 'WE', 'WO', 'XI', 'XU', 'YA', 'YE', 'YO', 'ZA',
-                    // Common 3-letter words
-                    'ACE', 'ACT', 'ADD', 'ADO', 'ADS', 'AFT', 'AGE', 'AGO', 'AID', 'AIM', 'AIR', 'ALE', 'ALL', 'AND', 'ANT', 'ANY', 'APE', 'ARC', 'ARE', 'ARK', 'ARM', 'ART', 'ASH', 'ASK', 'ATE', 'AWE', 'AXE',
-                    'BAD', 'BAG', 'BAN', 'BAR', 'BAT', 'BAY', 'BED', 'BEE', 'BET', 'BIG', 'BIN', 'BIT', 'BOB', 'BOG', 'BOW', 'BOX', 'BOY', 'BRA', 'BUD', 'BUG', 'BUM', 'BUN', 'BUS', 'BUT', 'BUY',
-                    'CAB', 'CAM', 'CAN', 'CAP', 'CAR', 'CAT', 'COB', 'COD', 'COG', 'COP', 'COT', 'COW', 'COX', 'COY', 'CRY', 'CUB', 'CUD', 'CUE', 'CUP', 'CUR', 'CUT',
-                    'DAB', 'DAD', 'DAM', 'DAY', 'DEN', 'DEW', 'DID', 'DIE', 'DIG', 'DIM', 'DIN', 'DIP', 'DOC', 'DOE', 'DOG', 'DON', 'DOT', 'DRY', 'DUB', 'DUD', 'DUE', 'DUG', 'DUN', 'DUO', 'DYE',
-                    'EAR', 'EAT', 'EEL', 'EGG', 'EGO', 'ELF', 'ELK', 'ELM', 'EMU', 'END', 'ERA', 'ERR', 'EVE', 'EWE', 'EYE',
-                    'FAD', 'FAN', 'FAR', 'FAT', 'FAX', 'FED', 'FEE', 'FEN', 'FEW', 'FIG', 'FIN', 'FIR', 'FIT', 'FIX', 'FLU', 'FLY', 'FOB', 'FOE', 'FOG', 'FOP', 'FOR', 'FOX', 'FRY', 'FUN', 'FUR',
-                    'GAB', 'GAG', 'GAL', 'GAP', 'GAS', 'GAY', 'GEL', 'GEM', 'GET', 'GIG', 'GIN', 'GNU', 'GOB', 'GOD', 'GOT', 'GUM', 'GUN', 'GUT', 'GUY', 'GYM',
-                    'HAD', 'HAG', 'HAM', 'HAS', 'HAT', 'HAY', 'HEM', 'HEN', 'HER', 'HEW', 'HEX', 'HEY', 'HID', 'HIM', 'HIP', 'HIS', 'HIT', 'HOB', 'HOD', 'HOE', 'HOG', 'HOP', 'HOT', 'HOW', 'HUB', 'HUE', 'HUG', 'HUM', 'HUT',
-                    'ICE', 'ICY', 'ILL', 'IMP', 'INK', 'INN', 'ION', 'IRE', 'IRK', 'ITS', 'IVY',
-                    'JAB', 'JAG', 'JAM', 'JAR', 'JAW', 'JAY', 'JET', 'JIG', 'JOB', 'JOG', 'JOT', 'JOY', 'JUG', 'JUT',
-                    'KEG', 'KEN', 'KEY', 'KID', 'KIN', 'KIT',
-                    'LAB', 'LAC', 'LAD', 'LAG', 'LAP', 'LAW', 'LAX', 'LAY', 'LEA', 'LED', 'LEG', 'LET', 'LID', 'LIE', 'LIP', 'LIT', 'LOG', 'LOT', 'LOW', 'LUG',
-                    'MAD', 'MAN', 'MAP', 'MAR', 'MAT', 'MAW', 'MAX', 'MAY', 'MEN', 'MET', 'MID', 'MIX', 'MOB', 'MOM', 'MOP', 'MOW', 'MUD', 'MUG', 'MUM',
-                    'NAB', 'NAG', 'NAP', 'NAY', 'NET', 'NEW', 'NIB', 'NIL', 'NIT', 'NOB', 'NOD', 'NOR', 'NOT', 'NOW', 'NUB', 'NUN', 'NUT',
-                    'OAK', 'OAR', 'OAT', 'ODD', 'ODE', 'OFF', 'OFT', 'OHM', 'OIL', 'OLD', 'ONE', 'OPT', 'ORB', 'ORE', 'OUR', 'OUT', 'OWE', 'OWL', 'OWN',
-                    'PAD', 'PAL', 'PAN', 'PAP', 'PAR', 'PAT', 'PAW', 'PAX', 'PAY', 'PEA', 'PEG', 'PEN', 'PEP', 'PER', 'PET', 'PEW', 'PIE', 'PIG', 'PIN', 'PIT', 'PLY', 'POD', 'POP', 'POT', 'POW', 'POX', 'PRO', 'PRY', 'PUB', 'PUG', 'PUN', 'PUP', 'PUS', 'PUT',
-                    'RAD', 'RAG', 'RAM', 'RAN', 'RAP', 'RAT', 'RAW', 'RAY', 'RED', 'REF', 'REP', 'RIB', 'RID', 'RIG', 'RIM', 'RIP', 'ROB', 'ROD', 'ROE', 'ROT', 'ROW', 'RUB', 'RUG', 'RUM', 'RUN', 'RUT', 'RYE',
-                    'SAC', 'SAD', 'SAG', 'SAP', 'SAT', 'SAW', 'SAX', 'SAY', 'SEA', 'SET', 'SEW', 'SEX', 'SHE', 'SHY', 'SIN', 'SIP', 'SIR', 'SIS', 'SIT', 'SIX', 'SKI', 'SKY', 'SLY', 'SOB', 'SOD', 'SON', 'SOP', 'SOT', 'SOW', 'SOX', 'SOY', 'SPA', 'SPY', 'STY', 'SUB', 'SUM', 'SUN', 'SUP',
-                    'TAB', 'TAD', 'TAG', 'TAN', 'TAP', 'TAR', 'TAT', 'TAX', 'TEA', 'TEN', 'THE', 'THY', 'TIC', 'TIE', 'TIN', 'TIP', 'TOE', 'TON', 'TOO', 'TOP', 'TOT', 'TOW', 'TOY', 'TRY', 'TUB', 'TUG', 'TUN', 'TUX', 'TWO',
-                    'UGH', 'UMP', 'UNS', 'UPO', 'UPS', 'URN', 'USE', 'UTA', 'UTS',
-                    'VAN', 'VAT', 'VET', 'VEX', 'VIA', 'VIE', 'VIM', 'VOW',
-                    'WAD', 'WAG', 'WAR', 'WAS', 'WAX', 'WAY', 'WEB', 'WED', 'WEE', 'WET', 'WHO', 'WHY', 'WIG', 'WIN', 'WIT', 'WOE', 'WOK', 'WON', 'WOO', 'WOW',
-                    'YAK', 'YAM', 'YAP', 'YAW', 'YEA', 'YEP', 'YES', 'YET', 'YEW', 'YIN', 'YIP', 'YOU', 'YOW', 'YUK', 'YUM', 'YUP',
-                    'ZAP', 'ZED', 'ZEE', 'ZEN', 'ZIG', 'ZIP', 'ZIT', 'ZOO'
-                ]);
-                dictionaryLoaded = true;
-                return false;
+            for (const source of DICTIONARY_SOURCES) {
+                try {
+                    console.log(`Attempting to load dictionary from: ${source}`);
+                    const response = await fetch(source);
+                    if (!response.ok) throw new Error(`Failed to fetch from ${source}`);
+                    const text = await response.text();
+                    // Handle both newline-separated and space-separated formats
+                    const words = text.split(/[\n\r\s]+/).map(w => w.trim().toUpperCase()).filter(w => w.length > 0 && /^[A-Z]+$/.test(w));
+                    if (words.length < 1000) throw new Error('Dictionary too small, trying next source');
+                    DICTIONARY = new Set(words);
+                    dictionaryLoaded = true;
+                    usingFallbackDictionary = false;
+                    console.log(`Dictionary loaded from ${source}: ${DICTIONARY.size} words`);
+                    hideDictionaryWarning();
+                    return true;
+                } catch (error) {
+                    console.warn(`Failed to load from ${source}:`, error.message);
+                    continue;
+                }
             }
+            
+            // All sources failed, use fallback
+            console.error('All dictionary sources failed, using fallback');
+            usingFallbackDictionary = true;
+            showDictionaryWarning();
+            // Fallback to basic dictionary
+            DICTIONARY = new Set([
+                // 2-letter words (official)
+                'AA', 'AB', 'AD', 'AE', 'AG', 'AH', 'AI', 'AL', 'AM', 'AN', 'AR', 'AS', 'AT', 'AW', 'AX', 'AY',
+                'BA', 'BE', 'BI', 'BO', 'BY', 'DA', 'DE', 'DO', 'ED', 'EF', 'EH', 'EL', 'EM', 'EN', 'ER', 'ES', 'ET', 'EX',
+                'FA', 'FE', 'GI', 'GO', 'HA', 'HE', 'HI', 'HM', 'HO', 'ID', 'IF', 'IN', 'IS', 'IT', 'JO', 'KA', 'KI', 'LA', 'LI', 'LO',
+                'MA', 'ME', 'MI', 'MM', 'MO', 'MU', 'MY', 'NA', 'NE', 'NO', 'NU', 'OD', 'OE', 'OF', 'OH', 'OI', 'OK', 'OM', 'ON', 'OP', 'OR', 'OS', 'OW', 'OX', 'OY',
+                'PA', 'PE', 'PI', 'PO', 'QI', 'RE', 'SH', 'SI', 'SO', 'TA', 'TI', 'TO', 'UH', 'UM', 'UN', 'UP', 'US', 'UT', 'WE', 'WO', 'XI', 'XU', 'YA', 'YE', 'YO', 'ZA',
+                // Common 3-letter words
+                'ACE', 'ACT', 'ADD', 'ADO', 'ADS', 'AFT', 'AGE', 'AGO', 'AID', 'AIM', 'AIR', 'ALE', 'ALL', 'AND', 'ANT', 'ANY', 'APE', 'ARC', 'ARE', 'ARK', 'ARM', 'ART', 'ASH', 'ASK', 'ATE', 'AWE', 'AXE',
+                'BAD', 'BAG', 'BAN', 'BAR', 'BAT', 'BAY', 'BED', 'BEE', 'BET', 'BIG', 'BIN', 'BING', 'BIT', 'BOB', 'BOG', 'BOW', 'BOX', 'BOY', 'BRA', 'BUD', 'BUG', 'BUM', 'BUN', 'BUS', 'BUT', 'BUY',
+                'CAB', 'CAM', 'CAN', 'CAP', 'CAR', 'CAT', 'COB', 'COD', 'COG', 'COP', 'COT', 'COW', 'COX', 'COY', 'CRY', 'CUB', 'CUD', 'CUE', 'CUP', 'CUR', 'CUT',
+                'DAB', 'DAD', 'DAM', 'DAY', 'DEN', 'DEW', 'DID', 'DIE', 'DIG', 'DIM', 'DIN', 'DIP', 'DOC', 'DOE', 'DOG', 'DON', 'DOT', 'DRY', 'DUB', 'DUD', 'DUE', 'DUG', 'DUN', 'DUO', 'DYE',
+                'EAR', 'EAT', 'EEL', 'EGG', 'EGO', 'ELF', 'ELK', 'ELM', 'EMU', 'END', 'ERA', 'ERR', 'EVE', 'EWE', 'EYE',
+                'FAD', 'FAN', 'FAR', 'FAT', 'FAX', 'FED', 'FEE', 'FEN', 'FEW', 'FIG', 'FIN', 'FIR', 'FIT', 'FIX', 'FLU', 'FLY', 'FOB', 'FOE', 'FOG', 'FOP', 'FOR', 'FOX', 'FRY', 'FUN', 'FUR',
+                'GAB', 'GAG', 'GAL', 'GAP', 'GAS', 'GAY', 'GEL', 'GEM', 'GET', 'GIG', 'GIN', 'GNU', 'GOB', 'GOD', 'GOT', 'GUM', 'GUN', 'GUT', 'GUY', 'GYM',
+                'HAD', 'HAG', 'HAM', 'HAS', 'HAT', 'HAY', 'HEM', 'HEN', 'HER', 'HEW', 'HEX', 'HEY', 'HID', 'HIM', 'HIP', 'HIS', 'HIT', 'HOB', 'HOD', 'HOE', 'HOG', 'HOP', 'HOT', 'HOW', 'HUB', 'HUE', 'HUG', 'HUM', 'HUT',
+                'ICE', 'ICY', 'ILL', 'IMP', 'INK', 'INN', 'ION', 'IRE', 'IRK', 'ITS', 'IVY',
+                'JAB', 'JAG', 'JAM', 'JAR', 'JAW', 'JAY', 'JET', 'JIG', 'JOB', 'JOG', 'JOT', 'JOY', 'JUG', 'JUT',
+                'KEG', 'KEN', 'KEY', 'KID', 'KIN', 'KIT',
+                'LAB', 'LAC', 'LAD', 'LAG', 'LAP', 'LAW', 'LAX', 'LAY', 'LEA', 'LED', 'LEG', 'LET', 'LID', 'LIE', 'LIP', 'LIT', 'LOG', 'LOT', 'LOW', 'LUG',
+                'MAD', 'MAN', 'MAP', 'MAR', 'MAT', 'MAW', 'MAX', 'MAY', 'MEN', 'MET', 'MID', 'MIX', 'MOB', 'MOM', 'MOP', 'MOW', 'MUD', 'MUG', 'MUM',
+                'NAB', 'NAG', 'NAP', 'NAY', 'NET', 'NEW', 'NIB', 'NIL', 'NIT', 'NOB', 'NOD', 'NOR', 'NOT', 'NOW', 'NUB', 'NUN', 'NUT',
+                'OAK', 'OAR', 'OAT', 'ODD', 'ODE', 'OFF', 'OFT', 'OHM', 'OIL', 'OLD', 'ONE', 'OPT', 'ORB', 'ORE', 'OUR', 'OUT', 'OWE', 'OWL', 'OWN',
+                'PAD', 'PAL', 'PAN', 'PAP', 'PAR', 'PAT', 'PAW', 'PAX', 'PAY', 'PEA', 'PEG', 'PEN', 'PEP', 'PER', 'PET', 'PEW', 'PIE', 'PIG', 'PIN', 'PIT', 'PLY', 'POD', 'POP', 'POT', 'POW', 'POX', 'PRO', 'PRY', 'PUB', 'PUG', 'PUN', 'PUP', 'PUS', 'PUT',
+                'RAD', 'RAG', 'RAM', 'RAN', 'RAP', 'RAT', 'RAW', 'RAY', 'RED', 'REF', 'REP', 'RIB', 'RID', 'RIG', 'RIM', 'RIP', 'ROB', 'ROD', 'ROE', 'ROT', 'ROW', 'RUB', 'RUG', 'RUM', 'RUN', 'RUT', 'RYE',
+                'SAC', 'SAD', 'SAG', 'SAP', 'SAT', 'SAW', 'SAX', 'SAY', 'SEA', 'SET', 'SEW', 'SEX', 'SHE', 'SHY', 'SIN', 'SIP', 'SIR', 'SIS', 'SIT', 'SIX', 'SKI', 'SKY', 'SLY', 'SOB', 'SOD', 'SON', 'SOP', 'SOT', 'SOW', 'SOX', 'SOY', 'SPA', 'SPY', 'STY', 'SUB', 'SUM', 'SUN', 'SUP',
+                'TAB', 'TAD', 'TAG', 'TAN', 'TAP', 'TAR', 'TAT', 'TAX', 'TEA', 'TEN', 'THE', 'THY', 'TIC', 'TIE', 'TIN', 'TIP', 'TOE', 'TON', 'TOO', 'TOP', 'TOT', 'TOW', 'TOY', 'TRY', 'TUB', 'TUG', 'TUN', 'TUX', 'TWO',
+                'UGH', 'UMP', 'UNS', 'UPO', 'UPS', 'URN', 'USE', 'UTA', 'UTS',
+                'VAN', 'VAT', 'VET', 'VEX', 'VIA', 'VIE', 'VIM', 'VOW',
+                'WAD', 'WAG', 'WAR', 'WAS', 'WAX', 'WAY', 'WEB', 'WED', 'WEE', 'WET', 'WHO', 'WHY', 'WIG', 'WIN', 'WIT', 'WOE', 'WOK', 'WON', 'WOO', 'WOW',
+                'YAK', 'YAM', 'YAP', 'YAW', 'YEA', 'YEP', 'YES', 'YET', 'YEW', 'YIN', 'YIP', 'YOU', 'YOW', 'YUK', 'YUM', 'YUP',
+                'ZAP', 'ZED', 'ZEE', 'ZEN', 'ZIG', 'ZIP', 'ZIT', 'ZOO'
+            ]);
+            dictionaryLoaded = true;
+            return false;
         }
         
         // Letter point values
@@ -4195,12 +4211,12 @@
             bingoList.innerHTML = html;
         }
         
-        function updateBingoScore() {
+        function updateBingoScore(skipCelebration = false) {
             document.getElementById('bingosFound').textContent = foundBingos.size;
             document.getElementById('bingosTotal').textContent = allBingos.length;
             
-            // Check if all bingos have been found
-            if (allBingos.length > 0 && foundBingos.size === allBingos.length) {
+            // Check if all bingos have been found (but not if revealed)
+            if (!skipCelebration && allBingos.length > 0 && foundBingos.size === allBingos.length) {
                 showCelebration('bingo');
             }
         }
@@ -4224,7 +4240,7 @@
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background: #667eea;
                 color: white;
                 padding: 30px 50px;
                 border-radius: 20px;
@@ -4281,9 +4297,9 @@
             
             bingoList.innerHTML = html;
             
-            // Mark all as found for the score
+            // Mark all as found for the score (but skip celebration)
             allBingos.forEach(word => foundBingos.add(word));
-            updateBingoScore();
+            updateBingoScore(true);
         }
         
         // Anagram Practice variables
@@ -4644,12 +4660,12 @@
             anagramList.innerHTML = html;
         }
         
-        function updateAnagramScore() {
+        function updateAnagramScore(skipCelebration = false) {
             document.getElementById('anagramsFound').textContent = foundAnagrams.size;
             document.getElementById('anagramsTotal').textContent = allAnagrams.length;
             
-            // Check if all anagrams have been found
-            if (allAnagrams.length > 0 && foundAnagrams.size === allAnagrams.length) {
+            // Check if all anagrams have been found (but not if revealed)
+            if (!skipCelebration && allAnagrams.length > 0 && foundAnagrams.size === allAnagrams.length) {
                 showCelebration('anagram');
             }
         }
@@ -4683,9 +4699,9 @@
             
             anagramList.innerHTML = html;
             
-            // Mark all as found for the score
+            // Mark all as found for the score (but skip celebration)
             allAnagrams.forEach(word => foundAnagrams.add(word));
-            updateAnagramScore();
+            updateAnagramScore(true);
         }
         
         function findAllExtensions(word) {
